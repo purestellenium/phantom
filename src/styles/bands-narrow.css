@@ -1,0 +1,52 @@
+@media (max-width: 700px) {
+	/* Wider inset than the hero takes.
+
+     The aperture closes in from all four sides and a portrait frame is nearly
+     all rim, so the darkest band of the field runs down both edges of a phone.
+     At the hero's 8vw a title set in the display face started in it and lost
+     its first letter to the vignette. This clears the rim. */
+	.band {
+		padding: 8vh 11vw 0;
+		gap: 20px;
+	}
+
+	/* No stagger at this width. A band here is as wide as the page, so there is
+     no side for it to be on - all that survives of the turn is ragged-left
+     prose, which is the cost of the effect without the effect. */
+	.band:nth-of-type(odd):not(.band-faq) {
+		align-items: stretch;
+		text-align: left;
+	}
+
+	.band-hours:nth-of-type(odd) {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.step {
+		grid-template-columns: 34px 1fr;
+		gap: 10px;
+		padding: 14px;
+	}
+
+	.band-hours {
+		gap: 8px 6vw;
+	}
+
+	.hours-fig {
+		font-size: clamp(96px, 32vw, 220px);
+	}
+
+	.cards {
+		grid-template-columns: 1fr;
+	}
+
+	.faq-q {
+		grid-template-columns: 26px 1fr 16px;
+		gap: 10px;
+	}
+
+	.faq-a-inner {
+		padding: 4px 8px 14px 22px;
+	}
+}

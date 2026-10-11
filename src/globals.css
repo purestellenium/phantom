@@ -1,0 +1,54 @@
+/* The whole stylesheet, in one order.
+
+   Every rule that used to live in this file is still here, in the same
+   sequence, split across ./styles by what it draws. THE ORDER OF THESE IMPORTS
+   IS THE CASCADE: the sheet is written at one specificity on purpose - a state
+   is a later rule, not a heavier selector - so `.card p.card-by` after
+   `.card p`, the unified field material after the controls that it unifies, and
+   `.controls :focus-visible` after `.inner-page :focus-visible` all depend on
+   which file comes first. Moving an import re-resolves the page. Add a new file
+   where its rules already sat, not at the end.
+
+   The narrow-screen blocks are files of their own where the section they
+   override is not the section that follows them. */
+
+@import './styles/tokens.css';
+@import './styles/base.css';
+
+/* the landing page */
+@import './styles/landing.css';
+@import './styles/controls.css';
+@import './styles/bell.css';
+@import './styles/landing-narrow.css';
+@import './styles/bands.css';
+@import './styles/cards.css';
+@import './styles/faq.css';
+@import './styles/bands-narrow.css';
+@import './styles/a11y.css';
+@import './styles/controls-states.css';
+
+/* the signed-in platform */
+@import './styles/shell.css';
+@import './styles/panel.css';
+@import './styles/forms.css';
+@import './styles/console.css';
+@import './styles/field-material.css';
+@import './styles/tasks.css';
+@import './styles/meter.css';
+@import './styles/screenshot.css';
+@import './styles/product.css';
+@import './styles/filters.css';
+@import './styles/modal.css';
+@import './styles/overlays.css';
+@import './styles/split.css';
+@import './styles/profile.css';
+@import './styles/order.css';
+@import './styles/log.css';
+@import './styles/page.css';
+@import './styles/guides.css';
+@import './styles/footer.css';
+@import './styles/landing-actions.css';
+@import './styles/pfp.css';
+
+/* last: the motion utilities are meant to win over any material they are put on */
+@import './styles/motion.css';

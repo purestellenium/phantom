@@ -1,0 +1,63 @@
+/* ── footer ──────────────────────────────────────────────────────────────── */
+
+/* The flag, at footer scale. Sized on the artwork's own 141:50, so it is not
+   stretched. */
+.foot-flag {
+	display: block;
+	flex: none;
+	width: 62px;
+	height: 22px;
+}
+
+.shell-foot {
+	width: 100%;
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 0 24px 28px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+	font-family: var(--font-geist-pixel-square), ui-monospace, monospace;
+}
+
+@media (max-width: 700px) {
+	.shell-main {
+		padding: 24px 16px 48px;
+	}
+
+	.nav {
+		padding: 16px 16px 0;
+		gap: 12px;
+	}
+
+	.nav-mark {
+		font-size: 26px;
+	}
+
+	.shell-foot {
+		padding: 0 16px 20px;
+	}
+
+	.figure-value {
+		font-size: 21px;
+	}
+
+	.row {
+		grid-template-columns: 1fr;
+	}
+
+	.row-value {
+		text-align: left;
+	}
+
+	/* A badge is sized by its word, and a one-column grid stretches its children
+     to the full track - so "verified" arrived as a pill the width of the panel,
+     which reads as a progress bar rather than as a label. Only needed here: in
+     the two-column layout the auto track already shrink-wraps it. */
+	.row > .badge {
+		justify-self: start;
+	}
+}

@@ -1,0 +1,171 @@
+/* Native controls, on the Paper button system: 10px radius, no visible
+   border, the raised surface for the field and a light fill for the submit,
+   Geist at 14px/1.43. Nothing here is a custom widget - they are the browser's
+   own elements, so focus order, autofill, IME and assistive tech all work
+   without being reimplemented. */
+.controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin-top: 4px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.control-input,
+.control-btn {
+	padding: 9px 15px;
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 1.4286;
+	border-radius: var(--control-radius);
+	border: 1px solid var(--line);
+}
+
+/* The two surfaces below are materials rather than colours: a weave tile over
+   a shade ramp, layered on the fill (see --weave-* and --shade-* in :root).
+   background-color rather than the shorthand everywhere in this file, so a
+   state that changes the fill keeps the weave under it. */
+/* The field has two states, and they are different materials rather than two
+   colours.
+
+   Idle and empty, the weave runs hard - a busy, active surface that reads as
+   waiting for you. In use that is the wrong material: a loud pattern under a
+   caret is miserable to read against, so focus or content pulls the weave
+   almost flat and swaps in a brighter, calmer fill. Busy to invite, quiet to
+   read on.
+
+   The fill stays opaque in both. An earlier pass made the idle state
+   part-transparent so the live ground would shimmer through it, which does
+   work - but at any alpha low enough to see the movement, the field stops
+   reading as a field at all.
+
+   The swap is instant: a state here is a change of material, and a material
+   does not fade into another one. */
+.control-input {
+	flex: 0 1 260px;
+	min-width: 0;
+	color: var(--ink);
+	background-color: var(--surface);
+	/* A meshed panel, shaded at the top so it sits down into the page. The
+     weave is kept well under the placeholder's own tone - at any strength
+     worth calling a texture it out-shouts 14px type and the field turns into
+     a grille with something lost behind it. */
+	/* bayer while idle, not grid. grid's interior cell is negative, so turning
+     it up darkens the box as it busies it and the field starts losing itself
+     against the ground - which is what went wrong the first time. bayer swings
+     evenly either side of the fill, so it can run hard at no cost to the
+     average. */
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.control-input::placeholder {
+	color: var(--ink-dim);
+}
+
+/* The rejected state.
+
+   This replaces the browser's own validation bubble, which is a native popup
+   painted over the page - it cannot be dithered, it ignores the palette, and
+   it points at a field that from its point of view is empty. The form carries
+   noValidate and Controls says it here instead, for about two seconds.
+
+   The red is real red. Pass C samples the page texture a second time and
+   tints its output wherever the page is saturated toward red, so the dither
+   itself comes out red rather than a flat red rectangle being laid over the
+   top - the weave, the banding and the grain all survive, in colour. It is
+   the one hue that crosses the grey ramp, and it only exists here. */
+.control-input.is-invalid {
+	background-color: #3a1519;
+	border-color: #c2414c;
+	color: #f3ccd0;
+	background-image: var(--weave-alarm), var(--shade-inset);
+}
+
+.control-input.is-invalid::placeholder {
+	color: #dda2a8;
+}
+
+.control-btn {
+	min-width: 92px;
+	font-weight: 500;
+	text-align: center;
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: var(--ink);
+	cursor: pointer;
+	/* Screen-printed: an ordered matrix on a lit ramp, so it stands off the
+     page instead of lying on it like a sticker. */
+	background-image: var(--weave-bayer), var(--shade-raised);
+	transition:
+		background-color 120ms ease,
+		color 120ms ease,
+		border-color 120ms ease;
+}
+
+/* Hover bites harder rather than just going brighter - the weave opens up,
+   which is a thing a dithered surface can do and a flat one cannot. */
+@media (hover: hover) {
+	/* Hover turns the button inside out: the light one goes dark with light
+	   type, the dark one goes light. A flip reads as a state where a shade
+	   brighter did not. */
+	.control-btn:hover {
+		color: var(--ink);
+		background-color: var(--surface);
+		border-color: var(--panel-line);
+		background-image: var(--weave-bayer-hard), var(--shade-inset);
+	}
+}
+
+/* No outline on the controls.
+
+   An outline is one hard vector edge in a frame made entirely of dither, and
+   the single most out-of-place thing on the page. It is deleted rather than
+   restyled because no colour would have fixed what was wrong with it.
+
+   The indicator moves into the surface instead: the fill steps up a full
+   level of the ramp. That is a large-area luminance change rather than a
+   colour-only cue, so focus stays genuinely visible - this is a substitution,
+   not a removal. Keyboard users still see exactly where they are. */
+.controls :focus,
+.controls :focus-visible {
+	outline: none;
+}
+
+/* In use: opaque, calm, and readable. :focus rather than :focus-visible,
+   because a text box should show where you are typing whether you arrived by
+   click or by tab - and .has-value keeps it settled once there is something in
+   it to read, even after focus moves on. */
+/* In use, exactly the surface it had before: the quiet grid weave and the
+   brighter fill. The busy state is the addition; this is the baseline. */
+.control-input:focus,
+.control-input.has-value {
+	background-color: var(--panel);
+	background-image: var(--weave-grid);
+}
+
+.control-input.is-invalid:focus,
+.control-input.is-invalid.has-value {
+	background-color: #5e2129;
+}
+
+/* The button uses :focus-visible, so clicking it does not leave it lit. */
+.control-btn:focus-visible {
+	color: var(--ink);
+	background-color: var(--surface);
+	border-color: var(--panel-line);
+	background-image: var(--weave-bayer-hard), var(--shade-inset);
+}
+
+.control-status {
+	flex-basis: 100%;
+	min-height: 1.2em;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+/* Saturated enough to clear the smoothstep in Pass C, so the message reddens
+   with the field rather than staying grey next to it. */
+.control-status.is-invalid {
+	color: #e08a92;
+}

@@ -1,0 +1,132 @@
+/* ── tasks ───────────────────────────────────────────────────────────────── */
+
+/* Onboarding, as a list of things to do rather than a wizard.
+
+   A wizard hides where you are in it and makes going back a special case; a
+   list shows the whole shape at once and lets any step be the one you are on.
+   The number is the anchor, in the mono face, because it is a position and not
+   a word. */
+.tasks {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.task {
+	display: grid;
+	grid-template-columns: 28px 1fr auto;
+	align-items: start;
+	gap: 12px;
+	padding: 13px;
+	border: 1px solid transparent;
+	border-radius: var(--control-radius);
+}
+
+.task-idx {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: var(--text-xs);
+	line-height: 1.6;
+	color: var(--ink-dim);
+}
+
+.task-label {
+	min-width: 0;
+	font-size: var(--text-sm);
+	line-height: 1.4286;
+}
+
+/* --ink-mid, not --ink-dim. This is the line that explains what the step IS -
+   the one piece of text on the row somebody has to read rather than glance at -
+   and at 12px --ink-dim was under three to one against the panel and about two
+   to one against the lit row. A step under the label is the hierarchy that was
+   wanted; illegible is not. Same token, same reason, as .figure-label. */
+.task-hint {
+	display: block;
+	margin-top: 4px;
+	font-size: var(--text-xs);
+	line-height: 1.6;
+	color: var(--ink-mid);
+}
+
+.task-body {
+	grid-column: 2 / -1;
+	margin-top: 12px;
+}
+
+/* A link inside a hint: the ink, dotted, in every state including visited.
+ *
+ * The shell's rule for links in running text already says this, but it is
+ * written as `a:not([class])` and so depends on nothing ever putting a class on
+ * the anchor - which is exactly the kind of condition that quietly stops being
+ * true. This says it in the hint's own right, the way .form-hint does, so the
+ * browser's visited purple cannot reappear here because of a selector written
+ * somewhere else. */
+.task-hint a,
+.task-hint a:visited {
+	color: var(--ink);
+	text-decoration: underline dotted;
+	text-underline-offset: 2px;
+}
+
+.task-hint a:hover,
+.task-hint a:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+/* The step you are on: a level OFF the panel, the readable inset weave, and an
+   edge. The ones behind and ahead of it stay flat on the panel, which is what
+   makes exactly one row look like the live one.
+
+   The level is downward - --level-surface, a step below the panel rather than
+   the --level-lift this used to take. At seven levels a fill bright enough to
+   read as lifted is too bright to carry small text: on --level-lift the hint
+   was about two to one, and there is no colour that rescues it, because the
+   brightest ink available only reaches four and pure white five. Recessed, the
+   same row carries the label at eleven to one and the hint at seven, and it
+   still cannot be mistaken for the flat rows around it - which was the whole
+   job. The inset shade was always drawn for a surface that sits down in the
+   panel anyway; now it agrees with the fill under it.
+
+   The weave is the HARD bayer rather than the soft one, and that is what the
+   recessed fill costs. The soft tile swings between about 0.6% and 9% either
+   side of the fill under it, which reads as a material on --level-lift and
+   reads as nothing at all this far down the ramp - the row went flat grey, and
+   a flat grey box is the one thing this palette has no vocabulary for. The
+   hard tile is the same pattern at a little over twice the amplitude, which on
+   a dark fill is the difference between a texture and a swatch. It is what the
+   meter's fill and every hover state on a dark surface already wear, for the
+   same reason. */
+.task[data-state='current'] {
+	color: var(--ink);
+	background-color: var(--level-surface);
+	border-color: var(--panel-line);
+	background-image: var(--weave-bayer-hard), var(--shade-inset);
+}
+
+.task[data-state='current'] .task-idx {
+	color: var(--ink-mid);
+}
+
+.task[data-state='current'] .task-label {
+	color: var(--ink);
+}
+
+/* The hint on a step still to do - the live one and the ones ahead - most of
+   the way up to the label's ink. At --ink-mid it was drawn for the recessed
+   current row, where it reads at seven to one; on the flat panel the rows
+   ahead sit on, the same colour sank into the ground, and those are the rows
+   whose hints say what still has to be done. Kept a step under the label so
+   the label still leads; a finished step keeps the quieter --ink-mid above. */
+.task:not([data-state='done']) .task-hint {
+	color: color-mix(in srgb, var(--ink) 75%, var(--ink-mid));
+}
+
+/* Done. Dimmed rather than hidden - the list is also a record of what you have
+   already dealt with. One step down from --ink rather than two: a finished step
+   is quieter than a live one, not retired from being read, and 14px at
+   --ink-dim on the panel was under the line for body text. */
+.task[data-state='done'] .task-label {
+	color: var(--ink-mid);
+}

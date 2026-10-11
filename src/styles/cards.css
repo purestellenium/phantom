@@ -1,0 +1,315 @@
+.cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+	gap: 10px;
+	list-style: none;
+}
+
+/* [3a] A card in a list arrives a beat after the one before it: faded up and
+   a few pixels higher, settling. Capped at a dozen beats, so a long page is
+   not something to wait through; `--i` is its place among the cards that
+   arrived together (see Card's `index`). `backwards`, so nothing holds a
+   transform once it has landed. */
+.card.is-listed {
+	animation: card-in 440ms var(--ease-out) backwards;
+	animation-delay: calc(min(var(--i, 0), 12) * 30ms + 60ms);
+}
+
+@keyframes card-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card.is-listed {
+		animation: none;
+	}
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 16px;
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-image: var(--weave-grid), var(--shade-inset);
+}
+
+.card h3 {
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: 0.01em;
+}
+
+.card p {
+	font-size: var(--text-md);
+	line-height: 1.65;
+	letter-spacing: 0.01em;
+	color: #cfcac2;
+}
+
+/* Under the name, before the blurb. On the landing page it still closes the
+   card, which .card > .card-by:last-child keeps. */
+/* `.card p` above outranks a bare class, so the byline names its element. */
+.card p.card-by {
+	color: var(--ink-dim);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.card > .card-by:last-child {
+	margin-top: auto;
+}
+
+/* The card as a link: no underline. Reaching it lifts the EDGE, not the fill:
+   a fill flip under a dithered picture reads as a glitch, and one level up
+   on a surface this big is a lot of light. The edge stepping up is the same
+   move the fields make. */
+.card-link {
+	text-decoration: none;
+	transition: border-color 120ms ease;
+}
+
+.card-link:hover,
+.card-link:focus-visible {
+	border-color: var(--panel-line);
+	outline: none;
+}
+
+.card-link:hover h3,
+.card-link:focus-visible h3 {
+	color: #ffffff;
+}
+
+/* Reaching a card shows its picture as it really is. The dither is how a
+   photo sits on the page; the hover is how you look at it. */
+.card:hover .card-thumb img,
+.card-link:focus-visible .card-thumb img {
+	filter: none;
+}
+
+/* The picture, bled to the card's edges and put through the dither filter
+   (see Dither.svelte) so it is made of the same seven levels as the ground.
+   It carries the card's top corners itself - squared off, the bleed would
+   square off the two corners the card rounds, the same reason
+   `.step:last-child` carries a panel's bottom ones (bands.css). */
+.card-thumb {
+	display: block;
+	aspect-ratio: 16 / 9;
+	margin: -16px -16px 4px;
+	overflow: hidden;
+	border-radius: var(--control-radius) var(--control-radius) 0 0;
+	border-bottom: 1px solid var(--line);
+	background-color: var(--level-lift);
+}
+
+.card-thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	filter: url(#dither);
+}
+
+/* Padded, so the picture is framed rather than bled.
+
+   `contain` rather than `cover`, and the two go together: padding a covered
+   image only crops it harder - it still meets the edges of whatever box is
+   left, so the space reads as a border drawn around a photograph rather than
+   as room given to it. Contained, the whole thing sits inside the padding,
+   which is the point of asking for padding at all. A product shot on a
+   transparent ground is what this exists for, and cropping one to fill a 16:9
+   box is how a pin ends up as a close-up of its own middle.
+
+   The thumb keeps its own fill behind it, so the space is the card's material
+   rather than a hole in it. */
+.card-thumb.is-padded img {
+	object-fit: contain;
+}
+
+/* No picture: the field itself, cut to the card (see startThumb in
+   lib/field/field.ts). One cell per two pixels, scaled up hard-edged. */
+.card-thumb.is-empty {
+	background-color: var(--bg);
+}
+
+.card-thumb.is-empty canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+	image-rendering: pixelated;
+}
+
+/* Wraps, so a name too long to share the row pushes the figure down onto a
+   line of its own instead of running underneath it. A name with no spaces in
+   it - a domain, a camelCase title - has nowhere to break, and at the title's
+   size even "edwardmare.com" was wider than the room beside the hours. */
+.card-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 4px 12px;
+}
+
+/* And a name wider than the whole card breaks inside the word, as the last
+   resort - overflowing the card is the one thing it must never do. */
+.card-head h3 {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* The figure beside the name: hours, a price. Mono, so a column of cards
+   lines its numbers up. */
+.card-aside {
+	flex: none;
+	font-size: var(--text-xs);
+	color: var(--ink);
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	white-space: nowrap;
+}
+
+/* Three lines and then an ellipsis, whatever the blurb is - and the author's
+   own line breaks inside them, same as the product page (see product.css).
+
+   The two rules pull against each other and the clamp is the one that gives
+   way quietly: every break spends one of the three lines, so a blurb written as
+   three paragraphs shows three opening words and nothing else. That is a real
+   cost and it is accepted, because the shape these breaks actually take here is
+   a line and a footnote under it - which reads as one run-on sentence without
+   this, and costs two of the three lines with it. If a long multi-paragraph
+   description ever turns up, this clamp is what to raise. */
+.card-desc {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	white-space: pre-line;
+}
+
+/* Compact: a strip of cards above a grid (explore's hyper-chroma panel),
+   kept low so the grid it introduces still starts on the first screen. The
+   picture goes from 16:9 to 3:1 and the blurb from three lines to two - the name,
+   the figure and the byline are what says which project it is. */
+.card.is-compact .card-thumb {
+	aspect-ratio: 3 / 1;
+}
+
+.card.is-compact .card-desc {
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+/* And the type a step down to match: at the grid's sizes a low card is mostly
+   name. `.card p` outranks a bare class, so the blurb and byline name their
+   element, as `.card p.card-by` does above. */
+.card.is-compact h3 {
+	font-size: 18px;
+}
+
+.card.is-compact p.card-desc {
+	font-size: 15px;
+	line-height: 1.5;
+}
+
+.card.is-compact p.card-by {
+	font-size: var(--text-xs);
+}
+
+/* In the shop the blurb is small and the price closes the card, large. */
+.card.is-shop .card-desc {
+	font-size: var(--text-xs);
+	line-height: 1.5;
+}
+
+/* The call to action closing a card, full width. It carries .control-btn for
+   the material and the geometry; this adds only what a button standing alone
+   at the foot of a card needs - the whole width, and the space above it that
+   pushes it down to sit on the card's bottom edge however tall the blurb
+   above ran. `display: grid` because the element is a span (see Card.svelte
+   for why), so it does not get a.control-btn's own inline-grid centring. */
+.card-cta {
+	/* Flex, not grid: the label is more than one child - "buy for" and the
+	   hours figure beside it - and a grid would give each its own row and
+	   stack them. This keeps them on one line and centred together. */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* A flex container trims the space that was sitting between the words and
+	   the figure, so the gap puts it back. The hours figure carries a margin
+	   of its own (see Hours.svelte), which adds to this - together they come
+	   to a little over a word space, which is what keeps the clock reading as
+	   part of the figure rather than of the words before it. */
+	gap: 0.28em;
+	width: 100%;
+	margin-top: auto;
+	/* Between the small text and .control-btn's 17px: a grid of these is a
+	   row of buttons, and at the full size they outshouted the products above
+	   them; at the small size they were hard to read. */
+	font-size: 15px;
+	/* The card's own 16px padding closes the gap below; this is the air above. */
+	padding-top: 9px;
+	padding-bottom: 9px;
+}
+
+/* Under the button: the price again, in the time it takes to earn. Small and
+   dim - it answers "how long is that?" for whoever wonders, and is out of the
+   way of whoever does not. */
+.card-cta-note {
+	margin-top: 6px;
+	font-size: var(--text-xs);
+	line-height: 1.4;
+	text-align: center;
+	color: var(--ink-dim);
+}
+
+/* Lights only on a direct hover - .control-btn's own rule in controls.css
+   already does that, so there is deliberately nothing here keying off the
+   card's hover. Keyboard focus still lands on the card as a whole, which
+   lifts the card's edge; the button does not need its own state for that. */
+
+/* Buttons at the foot, sharing the width between them. */
+.card-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: auto;
+	padding-top: 4px;
+}
+
+.card-actions .control-btn {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+/* The quiet button is one level off the ground, and a card is already one
+   level off the ground, so on a card it vanished. Two levels up with the
+   panel edge, so it is a button and not a ghost of one. */
+.card-actions .control-btn.is-quiet {
+	background-color: var(--panel);
+	border-color: var(--panel-line);
+}
+
+/* A small picture in a row, for the shop list and the orders list. */
+.row-thumb {
+	display: block;
+	width: 64px;
+	height: 44px;
+	flex: none;
+	object-fit: cover;
+	border-radius: 6px;
+	background-color: var(--level-lift);
+	filter: url(#dither);
+}
+
+.row-label.has-thumb {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}

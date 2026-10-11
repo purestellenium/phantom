@@ -1,0 +1,205 @@
+/* The mark at the end of the lede.
+
+   A control at the end of a sentence, not a link in it: it carries the submit
+   button's surface and weave, kept to the height of the line it sits on, so it
+   reads as something to press without breaking the paragraph. It says FAQ
+   rather than carrying a question mark - three letters at this size are more
+   legible through a seven-level ramp than one piece of punctuation, and they
+   say what it is instead of implying it.
+
+   It is an <a> now, so the browser's own underline has to come off. */
+.faq-mark {
+	display: inline-grid;
+	place-items: center;
+	height: 30px;
+	padding: 0 11px;
+	margin-left: 8px;
+	/* Measured, not guessed: an inline-grid takes its baseline from the item
+     inside it, which left the box sitting eleven pixels below the line it
+     belongs to. This centres it on the lede's own ink. */
+	vertical-align: 2px;
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	line-height: 1;
+	text-decoration: none;
+	cursor: pointer;
+	background-image: var(--weave-bayer), var(--shade-raised);
+}
+
+/* Lit while hovered or focused - the same light fill the submit wears, so the
+   state is the material changing rather than a colour shifting. Never an
+   outline, for the reason the controls have none. */
+.faq-mark:focus-visible {
+	color: var(--on-light);
+	background-color: var(--ink);
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	outline: none;
+}
+@media (hover: hover) {
+	.faq-mark:hover {
+		color: var(--on-light);
+		background-color: var(--ink);
+		background-image: var(--weave-bayer-hard), var(--shade-raised);
+		outline: none;
+	}
+}
+
+/* ==========================================================================
+   FAQ - an accordion in the flow, built from the control system.
+
+   It was a panel that opened over the bell out of a button in the lede. The
+   page has five bands under the hero now, and a set of questions you can only
+   reach by finding a control inside a sentence is the one thing on a scrolling
+   page nobody scrolls to - so it is a band like the rest and you arrive at it
+   by scrolling.
+
+   Nothing here transitions: a state is a change of material. The one thing
+   that moves is the answer sliding open, which Faq.svelte steps by hand.
+   ========================================================================== */
+
+/* The measure the questions are set to, named because two things are cut from
+   it: the list itself and the heading over it. */
+.band-faq {
+	--faq-measure: 780px;
+}
+
+/* The questions face the page rather than either edge of it, whichever side the
+   count would otherwise have put them on. It is the one band arrived at on
+   purpose - the mark at the end of the lede jumps here - so it is the end of a
+   path rather than another step along the stagger. Class and count carry the
+   same weight, so this has to sit below the stagger to win. */
+.band.band-faq {
+	align-items: center;
+	text-align: center;
+}
+
+/* Centred as blocks, read as a list. Both are cut to the same measure and
+   centred as one column, so the heading, the numerals, the questions and the
+   answers all start on the same left edge - the band is what is centred, not
+   the lines inside it. */
+.band.band-faq .band-title,
+.band.band-faq .faq-list {
+	width: 100%;
+	max-width: var(--faq-measure);
+	text-align: left;
+}
+
+.faq-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-width: var(--faq-measure);
+}
+
+.faq-item {
+	flex: none;
+}
+
+.faq-q {
+	appearance: none;
+	display: grid;
+	grid-template-columns: 30px 1fr 18px;
+	align-items: baseline;
+	gap: 12px;
+	width: 100%;
+	text-align: left;
+	color: var(--ink);
+	/* Transparent at rest, so nine questions read as a list on the field rather
+     than as nine slabs laid over it. Hover and focus are what put a surface
+     under the one you are on. */
+	background-color: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--control-radius);
+	padding: 12px 14px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	font-size: var(--text-md);
+	line-height: 1.4286;
+	cursor: pointer;
+}
+
+.faq-q-idx {
+	color: var(--ink-dim);
+	font-variant-numeric: tabular-nums;
+	font-size: var(--text-xs);
+}
+
+/* Bold, because it is the thing you run your eye down: the answer under it is
+   set at the same size, and weight is what keeps the two apart now that
+   brightness alone no longer does it. */
+.faq-q-label {
+	min-width: 0;
+	font-weight: 600;
+}
+
+.faq-q-sign {
+	color: var(--ink-dim);
+	text-align: right;
+	font-size: var(--text-md);
+	line-height: 1;
+}
+
+.faq-q[aria-expanded='true'] .faq-q-sign {
+	color: var(--ink);
+}
+
+/* Hover lifts one level off the ground; the picked row takes another and the
+   raised weave the submit button wears, so it stands off the rest. Both
+   instant, for the reason at the top of this block. */
+@media (hover: hover) {
+	.faq-q:hover {
+		background-color: var(--surface);
+		border-color: var(--line);
+		background-image: var(--weave-bayer), var(--shade-inset);
+	}
+}
+
+/* Focus is the same step up in material the hover is, one level brighter -
+   never an outline, which would arrive from the browser crisp and undithered
+   in a frame made entirely of dither. */
+.faq-q:focus-visible {
+	background-color: var(--panel);
+	border-color: var(--panel-line, var(--line));
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	outline: none;
+}
+
+.faq-q[data-current='true'] {
+	color: #f7f4ee;
+	background-color: var(--panel);
+	border-color: var(--line);
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+}
+
+.faq-q[data-current='true'] .faq-q-idx {
+	color: var(--ink);
+}
+
+/* The wrapper carries the height the slide animates and clips what has not
+   arrived yet; the padding is on the box inside it, so the height being
+   measured is the whole thing and the text does not slide out of its own
+   margins on the way. Indented to the question's own text column, so the list
+   still reads as a list with a row opened rather than as two stacked things. */
+.faq-a {
+	overflow: hidden;
+}
+
+.faq-a-inner {
+	padding: 4px 16px 14px 56px;
+}
+
+/* The one thing on the page you sit and read a paragraph of. It clears six of
+   the seven levels - a level and a half of daylight over the ground - and stops
+   a step short of the full ink so the questions still lead the list. */
+.faq-prose {
+	max-width: 58ch;
+	font-size: var(--text-md);
+	line-height: 1.75;
+	letter-spacing: 0.01em;
+	color: #dcd6cc;
+}

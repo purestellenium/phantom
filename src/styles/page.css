@@ -1,0 +1,98 @@
+/* ── page headings ───────────────────────────────────────────────────────── */
+
+.page-head {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* For a page whose header carries an action alongside the title (and,
+   usually, the lede under it) - a row rather than letting `.page-head`'s
+   column stack everything. Centred: the button sits against the pair of them
+   as a block, not against the title alone, so it lands between the two
+   lines rather than pinned level with the top one. */
+.page-head-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+/* The title and lede, kept to their own column inside the row above so the
+   pairing between them survives sharing that row with a button - same gap
+   `.page-head` uses when it has no row to be inside. */
+.page-head-text {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.page-title {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: clamp(34px, 6vw, 54px);
+	line-height: 1;
+	color: var(--fg);
+}
+
+.page-lede {
+	max-width: 52ch;
+	font-size: var(--text-lg);
+	line-height: 1.6;
+	color: #cfcac2;
+}
+
+/* ── centred single-purpose pages ────────────────────────────────────────── */
+
+/* Sign in, the closed-for-launch page, an error. One panel, centred, nothing
+   else on the screen. */
+.solo {
+	flex: 1 1 auto;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	min-height: 100dvh;
+}
+
+.solo-inner {
+	width: 100%;
+	max-width: 460px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+/* ── links in prose ──────────────────────────────────────────────────────── */
+
+/* No underline, for the reason at the top of this file. Marked the way
+   everything else here is marked, by being a step brighter than what surrounds
+   it. */
+/* `:visited` alongside, for the reason given on the classless-link rule in
+   forms.css: the browser's purple is a hue this palette does not contain, and
+   "you have been here before" is not something any screen here needs to say. */
+.link,
+.link:visited {
+	color: var(--fg);
+	text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+/* The foot of a grid that loads as you scroll.
+ *
+ * Centred and given real height because it is a scroll target as much as a
+ * control: onVisible watches this box, and a flush-packed row of nothing is
+ * both hard to press and easy for the observer to skip past between frames on
+ * a fast flick. The margin is what keeps it from reading as another card. */
+.page-more {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 64px;
+	margin-top: 14px;
+}

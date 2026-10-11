@@ -1,0 +1,133 @@
+/* The shop's filter row.
+ *
+ * Chips, in the nav's material rather than a new one: transparent until you
+ * reach them, the lift fill under the pointer, the light fill when they are the
+ * one in effect. That is the same three-level grammar shell.css sets out for
+ * "pressable / reached / you are here", and a filter is the same kind of fact
+ * as a tab - it says which slice of a page you are looking at. Inventing a
+ * second vocabulary for it would mean two things on one screen that both mean
+ * "selected" and look nothing alike.
+ *
+ * Every chip is an anchor. There is no button styling to reconcile because
+ * there are no buttons: see the note in the shop's +page.svelte for why the
+ * whole row is links.
+ */
+
+.filters {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.filter-row {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* The label down the left. A fixed basis rather than a natural width so
+   "kind", "category" and "sort" start their chips at the same x - three rows
+   of ragged left edges read as three unrelated controls. It is allowed to grow
+   past that basis if a longer legend ever turns up, and the chips just move
+   right with it. */
+.filter-legend {
+	flex: 0 0 auto;
+	min-width: 62px;
+	color: var(--ink-dim);
+	font-size: 13px;
+	line-height: 1;
+	letter-spacing: 0.02em;
+}
+
+.filter-chips {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-wrap: wrap;
+	/* min-width: 0 so a long row of shelf names wraps inside the flex item
+	   rather than pushing the whole row wider than the page. A flex item's
+	   default minimum is its content, which for a nowrap chip row is the sum of
+	   every chip. */
+	min-width: 0;
+}
+
+.filter-chip {
+	display: inline-grid;
+	place-items: center;
+	padding: 5px 9px;
+	border: 1px solid transparent;
+	border-radius: var(--control-radius);
+	color: var(--ink-dim);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+	text-decoration: none;
+	cursor: pointer;
+	background-color: transparent;
+}
+
+.filter-chip:hover,
+.filter-chip:focus-visible {
+	color: var(--ink);
+	background-color: var(--level-lift);
+	border-color: transparent;
+	background-image: var(--weave-bayer), var(--shade-inset);
+	outline: none;
+}
+
+/* In effect. The light fill, for the reason shell.css gives about the nav: at
+   this many levels of grey a panel-fill chip sitting on the ground reads as an
+   empty outline rather than as the choice that is live. */
+.filter-chip[aria-current='true'] {
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: transparent;
+	background-image: var(--weave-bayer), var(--shade-raised);
+}
+
+/* Focus on the chip that is already in effect.
+ *
+ * Not redundant, and the same hole shell.css documents: the rule above and the
+ * focus rule before it carry identical specificity, so the later one wins and
+ * tabbing onto the live chip would repaint it as… the live chip. Same fill,
+ * brighter and busier, which keeps "this is on" and "you are focused on it"
+ * legibly different without spending another colour. */
+.filter-chip[aria-current='true']:focus-visible {
+	background-color: #ffffff;
+	border-color: transparent;
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	outline: none;
+}
+
+/* "3 of 13 · show everything", above the grid. Small and dim: it is a
+   footnote about the list, not a heading over it. */
+.filter-count {
+	color: var(--ink-dim);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.filter-count a {
+	color: var(--ink-dim);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.filter-count a:hover,
+.filter-count a:focus-visible {
+	color: var(--ink);
+}
+
+@media (max-width: 700px) {
+	/* The legend goes above its chips rather than beside them. At this width a
+	   62px gutter is a tenth of the screen spent on the word "category", and the
+	   chips it was aligning have wrapped to three rows anyway - so the alignment
+	   it was buying no longer exists to be bought. */
+	.filter-row {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+	}
+}

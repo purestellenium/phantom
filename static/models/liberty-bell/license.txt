@@ -1,0 +1,11 @@
+Model Information:
+* title:	Philadelphia Liberty Bell – Digital Heritage
+* source:	https://sketchfab.com/3d-models/philadelphia-liberty-bell-digital-heritage-1224b10d7cba4776b02d014cc4d274c2
+* author:	VAR Lab (https://sketchfab.com/varlab)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Philadelphia Liberty Bell – Digital Heritage" (https://sketchfab.com/3d-models/philadelphia-liberty-bell-digital-heritage-1224b10d7cba4776b02d014cc4d274c2) by VAR Lab (https://sketchfab.com/varlab) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

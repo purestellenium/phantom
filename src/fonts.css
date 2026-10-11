@@ -1,0 +1,78 @@
+/* Every face is self-hosted, replacing next/font.
+
+   In the React build next/font fingerprinted each file, emitted the @font-face
+   and preloaded it, so there was no layout shift and no third-party request at
+   runtime. The two Geist faces arrived that way from the `geist` package;
+   Instrument Serif came through next/font/google, which downloaded it at build
+   time and served it from our own origin rather than letting the browser reach
+   Google. Here we do the same thing by hand: every woff2 lives in /static/fonts
+   and is served from our own origin, and each family is exposed as a CSS
+   variable (--font-*) so globals.css can reference it exactly as it did under
+   next/font, e.g. `var(--font-instrument), ui-serif, Georgia, serif`. */
+
+/* display only - the title.
+
+   The real italic, not a synthesised slant. Asking for font-style: italic
+   without loading the file makes the browser shear the upright, which on a
+   serif smears the stroke contrast and leaves the serifs standing straight.
+   Only italic is loaded because the h1 is the sole user of this face; add a
+   "normal" face here if anything ever wants it upright. Split latin / latin-ext
+   exactly as Google Fonts serves it. */
+@font-face {
+	font-family: 'Instrument Serif';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/InstrumentSerif-Italic-latin-ext.woff2') format('woff2');
+	unicode-range:
+		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+		U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+		U+A720-A7FF;
+}
+@font-face {
+	font-family: 'Instrument Serif';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/InstrumentSerif-Italic-latin.woff2') format('woff2');
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+		U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* the technical lines - Geist Mono, one variable file for every weight, from
+   the `geist` package (same shape as Geist Sans below). */
+@font-face {
+	font-family: 'Geist Mono';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
+}
+
+/* Geist Sans - one variable file for every weight, from the `geist` package. */
+@font-face {
+	font-family: 'Geist Sans';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/Geist-Variable.woff2') format('woff2');
+}
+
+/* Geist Pixel Square - the body face of the hero, the bands and the footer. It
+   ships a single weight; anything asking for bold gets the browser's synthetic
+   one, exactly as it did under next/font. */
+@font-face {
+	font-family: 'Geist Pixel Square';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/GeistPixel-Square.woff2') format('woff2');
+}
+
+:root {
+	--font-instrument: 'Instrument Serif';
+	--font-geist-mono: 'Geist Mono';
+	--font-geist-sans: 'Geist Sans';
+	--font-geist-pixel-square: 'Geist Pixel Square';
+}

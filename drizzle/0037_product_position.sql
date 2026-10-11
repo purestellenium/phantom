@@ -1,0 +1,2 @@
+ALTER TABLE "products" ADD COLUMN "position" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_position_sane" CHECK ("products"."position" >= -9999 and "products"."position" <= 9999);

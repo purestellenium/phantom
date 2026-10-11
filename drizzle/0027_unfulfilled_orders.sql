@@ -1,0 +1,1 @@
+ALTER TYPE "public"."order_state" ADD VALUE 'unfulfilled';

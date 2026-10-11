@@ -1,0 +1,397 @@
+/* The page - the browser's own DOM, above the canvas. It fades in as the hole
+   opens and takes the view. */
+#content {
+	/* In the flow, not pinned over it: the page is a hero screen with a footer
+     under it, and the field it sits on is the thing that stays still.
+     Positioned, and after the canvas in the DOM, which is what paints it above
+     the canvas. No z-index: that would make it a stacking context, and the bell
+     blends with the field (see .bell), which it can only do if nothing between
+     it and the root isolates it. The fade is on the children for the same
+     reason - opacity isolates too. */
+	position: relative;
+	width: 100%;
+}
+
+/* One screen, and a screen that holds still.
+
+   svh, not dvh. dvh is the height the viewport has RIGHT NOW, and on a phone
+   that grows as the URL bar retracts - which it does while you are scrolling.
+   The hero was measured in it, so the hero got taller mid-scroll and shoved
+   every band under it further down the page under your finger: you scrolled
+   down and the page pushed back. svh is the height with the bar showing and is
+   fixed for the session, so the layout cannot move while you are moving through
+   it. The field behind it still uses dvh, because it genuinely does have to
+   match the viewport it is being drawn into. */
+.hero {
+	position: relative;
+	width: 100%;
+	height: 100svh;
+}
+
+/* The ring, lifted off the field onto its own layer: above the page so it
+   crosses the type, below the vignette so the rim still darkens it. A
+   transparent canvas at the field's pitch, clear everywhere the arc is not. */
+.field-ring {
+	position: fixed;
+	inset: 0;
+	width: 100dvw;
+	height: 100dvh;
+	z-index: 2;
+	pointer-events: none;
+	display: block;
+	image-rendering: pixelated;
+}
+
+/* The vignette, over everything. The same curve the field's edge used to
+   carry - nothing inside 0.45 screen heights of the centre, closing to 72%
+   dark at 1.45 - as a gradient the compositor draws, above the page rather
+   than under it, so the type and the bell darken into the rim too. The stops
+   trace a smoothstep. */
+.vignette {
+	position: fixed;
+	inset: 0;
+	width: 100dvw;
+	height: 100dvh;
+	z-index: 3;
+	pointer-events: none;
+	background-image: radial-gradient(
+		circle at 50% 50%,
+		rgba(10, 10, 12, 0) 45dvh,
+		rgba(10, 10, 12, 0.11) 70dvh,
+		rgba(10, 10, 12, 0.36) 95dvh,
+		rgba(10, 10, 12, 0.61) 120dvh,
+		rgba(10, 10, 12, 0.72) 145dvh
+	);
+}
+
+.inner-page {
+	/* One number the title and the flag above it are both cut from - see
+     .page-mark for why they cannot be sized independently. */
+	--title-size: clamp(44px, 8vw, 150px);
+	/* The column's own gap, as a token because two rules below have to do
+	   arithmetic against it and the narrow block changes it. */
+	--col-gap: 22px;
+	/* The empty band under the title, and the reason equal gaps do not look
+	   equal here.
+
+	   PHANTOM is all capitals and the h1 runs at line-height 1, so the bottom of
+	   its box is not the bottom of its letters - the font's descender space sits
+	   under them, drawn into by nothing. Measured in the browser against
+	   Instrument Serif italic it is a flat 0.16 of the type size: 7px at the
+	   44px floor, 24px at the 150px ceiling. Give the title and the lede the
+	   same gap and the first one reads that much wider than the second, and the
+	   discrepancy GROWS with the viewport, because the title is cut from 8vw and
+	   the lede is not.
+
+	   So the two gaps below are set optically - to the space you can see - and
+	   this is what the title's half has to pay back to get there. */
+	--title-drop: calc(var(--title-size) * 0.16);
+	/* The visible air on each side of the lede - above it to the title's
+	   letters, below it to the field. Named for the element they bracket, since
+	   the two rules that read them live in different files and neither is the
+	   lede's own.
+
+	   Not one number any more: the title is a 150px italic serif and the lede
+	   is 21px, and a gap that settles the lede under the field below it still
+	   reads tight under a wordmark that size. So the top runs a step wider on
+	   purpose. These are the only spacing decisions in the hero stack; the
+	   rules below just back the invisible space out of them. */
+	--lede-space-above: 40px;
+	--lede-space-below: 32px;
+	/* What the lede's own line box adds above and below its letters: 21px type
+	   at line-height 1.7, so (1.7em - the face's ascent+descent) halved, plus
+	   the gap between its ascent and the cap it actually draws to. Measured in
+	   the browser rather than derived, because the second term depends on the
+	   face. Constant across every width - the type scale does not move - which
+	   is why they are plain pixels where --title-drop is a ratio. */
+	--lede-lead-top: 9.35px;
+	--lede-lead-bottom: 10.35px;
+	position: relative;
+	width: 50%;
+	height: 100%;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: var(--col-gap);
+	padding: 0 9vw;
+	color: #f2efe9;
+	font-family: var(--font-geist-pixel-square), ui-monospace, monospace;
+}
+
+/* The title is the one thing not set in the pixel face. Instrument Serif is
+   proportional and much narrower per character than Geist Pixel Square, so the
+   old 6.4vw - sized to fit seven fixed-pitch ems into the column - left it
+   small with a third of the column empty.
+
+   Re-measured against the same bound rather than guessed at: PHANTOM sets
+   3.64em wide in this face, and the column is 50vw less 9vw of padding either
+   side, so 32vw of room. 8vw puts the word at 29.1vw and leaves about nine
+   percent slack. Guessing gave 9.6vw, which overflowed the column by 42px. */
+.inner-page h1 {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-size: var(--title-size);
+	font-weight: 400;
+	line-height: 1;
+}
+
+/* The byline under the wordmark. Small and in the hero's own pixel face
+   (inherited from .inner-page). Tucked tight under PHANTOM and pushed clear of
+   the lede below (the column's own 22px gap, closed on top and opened on the
+   bottom), so [wordmark + byline] read as one title block rather than the byline
+   being a first line of the prose. */
+.hero-by {
+	margin-top: -20px;
+	margin-bottom: 2px;
+	/* A step above the scale's --text-sm (17px). The pixel face reads small at
+     that size in a light byline, so it is nudged up on its own rather than by
+     moving the shared token, which the lede and half the bands also draw from. */
+	font-size: 19px;
+	color: #cfcac2;
+}
+
+.inner-page .lede {
+	/* --lede-space-above of visible air under the title's letters: the column gap
+	   backed out, then the title's empty descender band and the lede's own top
+	   leading, neither of which is space you can see - see --title-drop for why
+	   an equal gap is not an equal gap here.
+
+	   The result is a small negative box gap on the widest screens (the lede's
+	   box laps into the band under the capitals, which nothing reaches) and a
+	   positive one everywhere else. All of them draw the same space. Eating
+	   into the column gap this way is the move .page-mark already makes above
+	   the title.
+
+	   Uncommenting .hero-by makes this moot rather than wrong: the byline lands
+	   between the two and the lede stops touching the title at all. */
+	margin-top: calc(
+		var(--lede-space-above) - var(--lede-lead-top) - var(--title-drop) - var(--col-gap)
+	);
+	max-width: 363px;
+	font-size: var(--text-lg);
+	line-height: 1.7;
+	letter-spacing: 0.01em;
+	color: #cfcac2;
+}
+
+/* The flag, sitting just above the title.
+
+   Kept in the flow rather than absolutely placed, which is what lets it follow
+   the title when the type rescales; the negative bottom margin eats the column
+   gap so it tucks up close to the capitals rather than floating a line above
+   them. */
+/* Every number here is a multiple of --title-size, and that is the point.
+
+   It was 141x50 flat, which is the size it wants to be next to a title set at
+   115px - the size the title happens to take at a desktop width. The title is
+   on a clamp and the flag was not, so the two came apart the moment the
+   viewport did: on a phone the title bottoms out at 44px while the flag stayed
+   141px wide, and a mark meant to sit above the word ended up wider than half
+   of it. The ratios below are that desktop pairing, kept: 141/115 wide,
+   50/141 of that tall, and the tuck and the lift in the same proportion. */
+.page-mark {
+	display: block;
+	/* Never shrink. It is a flex item in a column, and on a viewport short
+     enough for the column to overflow it was the first thing the browser took
+     the height out of - measured at 94x0 on a 700px-tall phone, which is why
+     the flag simply was not there. */
+	flex: none;
+	width: calc(var(--title-size) * 1.226);
+	height: calc(var(--title-size) * 0.435);
+	margin: 0 0 calc(var(--title-size) * -0.26) calc(var(--title-size) * 0.035);
+	transform: translateY(calc(var(--title-size) * -0.052));
+}
+
+/* The flag is drawn in Hack Club red; the field has one grey ramp, and red
+   lands in the middle of it. */
+.page-mark img,
+.foot-flag img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	filter: grayscale(1);
+	image-rendering: pixelated;
+}
+
+/* The halo behind the title, drawn once (see $lib/field/bloom), placed by it. */
+.hero-bloom {
+	position: absolute;
+	z-index: -1;
+	pointer-events: none;
+	image-rendering: pixelated;
+}
+
+/* Under the fold: the band the hero scrolls up to reveal.
+
+   A column - who runs this and where to go next, then the credit, then the
+   wordmark the page ends on. The field behind it is fixed, so scrolling here
+   moves the type across a backdrop that holds still. */
+.page-foot {
+	position: relative;
+	min-height: 17vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: 40px;
+	/* No side padding of its own: the wordmark at the bottom runs the width of
+     the page, so the inset belongs to the rows above it instead. */
+	padding: 12vh 0 0;
+	/* The wordmark is cut to the viewport and italic, so it leans a little past
+     it. Clipped here rather than allowed to widen the page. */
+	overflow: hidden;
+	color: #cfcac2;
+	font-family: var(--font-geist-pixel-square), ui-monospace, monospace;
+}
+
+/* Every link in the band, said three ways: the top of the ramp, the heaviest
+   ink on the page, and a dotted rule under it.
+
+   Dotted specifically. A solid underline is one crisp vector edge over a
+   field made entirely of dither, which is why there is not one anywhere else
+   here; a row of dots is the same material as the ground under it.
+
+   Hover and focus close the rule up rather than brightening it: the ink is
+   already at the top of the ramp with nowhere above it to go, so the state has
+   to be carried by the material, the way it is on every control here. Never an
+   outline, for the reason the controls have none. */
+.page-foot a {
+	color: #ffffff;
+	font-weight: 700;
+	text-decoration: underline dotted;
+	text-underline-offset: 5px;
+}
+.page-foot a:focus-visible {
+	text-decoration-style: solid;
+	outline: none;
+}
+/* Hover only where there is a hover. On a touch screen the browser keeps the
+   last tapped element in :hover until the next tap lands somewhere else, so
+   every one of these states stuck - a link held solid, the button held white,
+   a question row held lit - long after the finger had gone. */
+@media (hover: hover) {
+	.page-foot a:hover {
+		text-decoration-style: solid;
+		outline: none;
+	}
+}
+
+.foot-cols {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 44px 6vw;
+	padding: 0 9vw;
+}
+
+.foot-about {
+	flex: 1 1 420px;
+	max-width: 58ch;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.foot-about h2 {
+	font-size: var(--text-lg);
+	font-weight: 400;
+	line-height: 1.2;
+}
+
+.foot-about p {
+	font-size: var(--text-md);
+	line-height: 1.75;
+	letter-spacing: 0.01em;
+}
+
+.foot-side {
+	display: flex;
+	flex-direction: column;
+	gap: 36px;
+}
+
+.foot-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 32px 4vw;
+}
+
+.foot-col {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	min-width: 160px;
+}
+
+/* The label over each column, one level down from the links under it and no
+   further: it says what the list is, and the list is the thing you are here to
+   click. Same size as those links rather than a smaller one - seven levels is a
+   coarse ramp, and small dim type is the combination it cannot hold. The step
+   down is carried by the level alone. */
+.foot-col h3 {
+	font-size: var(--text-sm);
+	font-weight: 400;
+	color: #cfcac2;
+}
+
+.foot-col ul {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	list-style: none;
+	font-size: var(--text-sm);
+}
+
+/* The title again, at the size the page ends on.
+
+   Sized from the face rather than guessed at, the same measurement the hero's
+   own title is cut from: PHANTOM sets 3.64em wide in Instrument Serif italic,
+   so 27vw puts it at 98vw and leaves the width of the page as the thing that
+   decides how big the word is. It scales with the viewport all the way down,
+   so a phone gets the same edge-to-edge word rather than a shrunken one.
+
+   The ramp is the point. A slab of flat ink this size would be a wall; run top
+   to bottom from near the page's brightest ink down to a couple of levels above
+   the ground, it comes out as bands of dither that thin into the field and let
+   the page end rather than stop. A gradient clipped to the glyphs. */
+.foot-mark {
+	margin-top: 5vh;
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: 25vw;
+	line-height: 0.78;
+	text-align: center;
+	user-select: none;
+	color: #e6e2da;
+	background-image: linear-gradient(#e6e2da, #6a6a72);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+/* The credit, under the links rather than centred on its own line: it belongs
+   with the small print, and the middle of the band is where the wordmark is
+   about to be. Left in the guarded block with them, so it is read at the same
+   pitch and holds as still.
+
+   Pushed to the foot of its column rather than sat under the last link, so it
+   lands on the same line the copy on the left ends on: the two columns are the
+   same height, and this is what puts the bottom of the band on one line instead
+   of two. */
+.page-credit {
+	margin-top: auto;
+	font-size: var(--text-sm);
+	color: #cfcac2;
+}
+
+.inner-page :focus-visible {
+	outline: 2px solid #f2efe9;
+	outline-offset: 3px;
+}
+
+/* Native selection - the browser's own, not a reconstruction of it. */
+.inner-page ::selection {
+	background-color: #f2efe9;
+	color: #0a0a0c;
+}

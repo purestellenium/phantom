@@ -1,0 +1,94 @@
+/* ── one field material ──────────────────────────────────────────────────── */
+
+/* The text box, the textarea and the closed select are one control in three
+   shapes, so they take one set of states. Idle is the woven surface; in use
+   the fill steps up a level AND the edge steps up with it. The edge matters:
+   --panel and --line are one level apart, so a focused box that kept the idle
+   edge lost it - the border vanished the moment you clicked in. */
+.control-input,
+.control-textarea,
+.control-select {
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.control-input:focus,
+.control-input.has-value,
+.control-textarea:focus,
+.control-textarea.has-value,
+.control-select:focus {
+	background-color: var(--panel);
+	border-color: var(--panel-line);
+	background-image: var(--weave-grid);
+	outline: none;
+}
+
+/* Rejected. The one hue on the page; see .control-input.is-invalid above for
+   why the dither itself comes out red rather than a red box over it. */
+.control-input.is-invalid,
+.control-textarea.is-invalid,
+.control-select.is-invalid {
+	color: #f3ccd0;
+	background-color: #3a1519;
+	border-color: #c2414c;
+	background-image: var(--weave-alarm), var(--shade-inset);
+}
+
+.control-input.is-invalid:focus,
+.control-textarea.is-invalid:focus,
+.control-select.is-invalid:focus {
+	background-color: #5e2129;
+	border-color: #c2414c;
+}
+
+/* A required field says so on its label. Read off the control rather than
+   written by hand, so the mark and the constraint cannot disagree. */
+.form-field:has(:required) > .form-label::after {
+	content: ' *';
+	color: #e08a92;
+}
+
+/* JSON wants the mono face and does not want to be wrapped mid-token. */
+.control-textarea.is-code {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-size: var(--text-xs);
+	line-height: 1.6;
+	white-space: pre;
+	overflow-x: auto;
+}
+
+/* A checkbox and its label on one line. The box and its tick are the
+   platform's own. */
+.check-field {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	font-size: var(--text-sm);
+}
+
+.check-field input {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	accent-color: var(--level-raise);
+}
+
+/* Preformatted output: a reconciliation sample, an outbox payload. Scrolls
+   inside itself rather than widening the page. */
+.console-pre {
+	margin: 0;
+	padding: 11px 13px;
+	border: 1px solid var(--panel-line);
+	border-radius: var(--control-radius);
+	background-color: var(--level-lift);
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-size: var(--text-xs);
+	line-height: 1.6;
+	color: var(--ink);
+	overflow-x: auto;
+	white-space: pre;
+	background-image: var(--weave-bayer), var(--shade-inset);
+}

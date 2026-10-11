@@ -1,0 +1,66 @@
+/* The bell's slot - anchored to the bottom-right of the hero screen. Absolute,
+   not fixed: it belongs to the screen and scrolls away with it. */
+.model-wrap {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 50vw;
+	height: 95svh;
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+/* The bell: a canvas the model's turn is dithered into, frame by frame (see
+   $lib/field/bellDither), one cell per canvas pixel. It sits on the ground with
+   a lighten blend, so the black around it is the ground showing through and
+   there is no rectangle; the bell itself is brighter than the ground everywhere
+   it matters. Two pixels per cell, the same grid as the ground. */
+.bell {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	/* A replaced element: capped in height, and its width taken from the
+	   canvas's own 264x364. It filled its slot before it became a canvas (a
+	   728px cap shrank it); this is the middle ground. */
+	height: min(80vh, 100%);
+	width: auto;
+	max-width: 100%;
+	display: block;
+	/* The bell keeps its proportions even when the box cannot.
+	
+	   The comment above used to claim the browser shrinks the height to match
+	   when the height asks for more width than the slot has. It does not, and
+	   that is the whole bug: the height here is SPECIFIED rather than auto, so
+	   it wins, `max-width` clips the width on its own, and nothing transfers the
+	   clamp back. On a tall narrow window - 884x1105, say - min(80vh, 100%)
+	   asked for 884px of height, which wants 641px of width, and the 442px slot
+	   cut it to 442: the bell rendered at a ratio of 0.50 against its true
+	   0.725, a third too narrow, and squished further the taller the window got.
+	
+	   `aspect-ratio` does not help, tested - the specified height still wins.
+	   Capping the height by what the slot's width allows does, but only by
+	   writing the slot's width into this rule, which then has to be restated at
+	   every breakpoint where the slot changes shape.
+	
+	   So the box is left free to go off-ratio and the PICTURE is not: contain
+	   letterboxes the 264x364 bitmap inside whatever box it is given. Measured
+	   against the rules as they were, the box and its centre come out identical
+	   at every size that was already correct - this only ever engages where the
+	   old behaviour was stretching. */
+	object-fit: contain;
+	/* Nudged up off dead-centre; a self-transform, so the lighten blend with the
+	   field behind it is untouched. */
+	transform: translateY(-40px);
+	mix-blend-mode: lighten;
+	image-rendering: pixelated;
+}
+
+/* The video the canvas reads from. Kept in the page so it decodes, but never
+   seen. */
+.bell-src {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}

@@ -1,0 +1,609 @@
+/* ── the profile picture maker ───────────────────────────────────────────── */
+
+/* A public page wearing the landing's ground.
+
+   It reuses #content (landing.css) and .foot-mark, and the field behind it is
+   the same <Field /> the front page mounts - so this is the landing's material
+   with a tool on it rather than a second look. What it deliberately does NOT
+   take is the panel surface the signed-in pages use: the controls sit straight
+   on the field, exactly as the landing's own email field and button do. A lit
+   panel here would make it a page of the product, and it is not one. */
+.pfp {
+	display: flex;
+	flex-direction: column;
+	min-height: 100svh;
+	/* The hero's face, for the same reason .inner-page takes it: everything on
+	   the ground is set in the pixel face, and the serif is reserved for the
+	   wordmark and the title. */
+	font-family: var(--font-geist-pixel-square), ui-monospace, monospace;
+	color: var(--fg);
+}
+
+.pfp-inner {
+	flex: 1;
+	width: min(1080px, 100% - 48px);
+	margin: 0 auto;
+	padding: clamp(26px, 5vh, 64px) 0 48px;
+}
+
+/* ── the head ────────────────────────────────────────────────────────────── */
+
+.pfp-head {
+	margin-bottom: clamp(24px, 4vh, 44px);
+}
+
+/* The wordmark, at nav size, as the way back. Not a nav: there is one link on
+   this page and a bar drawn around it would be furniture for nothing.
+
+   32px is .nav-mark's size exactly (shell.css), which is the point - somebody
+   arriving here from the signed-in side should find the wordmark where and as
+   they left it. */
+.pfp-back {
+	display: inline-block;
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-size: 32px;
+	line-height: 1;
+	color: var(--fg);
+	text-decoration: none;
+	opacity: 0.82;
+	transition: opacity 120ms ease;
+}
+
+/* No outline, for the reason controls.css gives at length: one hard vector edge
+   in a frame made of dither is the most out-of-place thing on the page. The
+   indicator is the same lift hover uses, which is a luminance change rather
+   than a colour-only cue. */
+.pfp-back:hover,
+.pfp-back:focus-visible {
+	opacity: 1;
+	color: #ffffff;
+	outline: none;
+}
+
+.pfp-title {
+	margin-top: 8px;
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: clamp(38px, 6vw, 68px);
+	line-height: 1;
+}
+
+.pfp-lede {
+	margin-top: 10px;
+	max-width: 48ch;
+	font-size: var(--text-sm);
+	line-height: 1.5;
+	color: #cfcac2;
+}
+
+/* ── the two columns ─────────────────────────────────────────────────────── */
+
+/* The picture leads and the controls follow it, which is the order they are
+   used in. The right column is fixed rather than fractional so the stage takes
+   the slack: this is a tool for looking at a photograph. */
+.pfp-work {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 320px;
+	gap: clamp(20px, 3vw, 40px);
+	align-items: start;
+}
+
+@media (max-width: 900px) {
+	.pfp-work {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* ── the stage ───────────────────────────────────────────────────────────── */
+
+/* The crop frame. A border here and nowhere else in the tool, because this one
+   is not decoration - it is the edge of what will be in the picture, and the
+   person is choosing against it. */
+.pfp-stage {
+	position: relative;
+	width: 100%;
+	max-width: 512px;
+	aspect-ratio: 1;
+	overflow: hidden;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--surface);
+	background-image: var(--weave-bayer), var(--shade-inset);
+	transition:
+		border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+/* Both states are the same signal - something is about to land here, or the
+   keyboard is in here - so both wear the same edge. */
+.pfp-stage.is-over,
+.pfp-stage:focus-within {
+	border-color: var(--ink);
+	box-shadow: 0 0 0 2px rgba(233, 230, 225, 0.32);
+}
+
+.pfp-canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+	cursor: grab;
+	/* The drag pans the crop; without this a touch drag scrolls the page out
+	   from under the thing being dragged. */
+	touch-action: none;
+	outline: none;
+}
+
+.pfp-canvas.is-dragging {
+	cursor: grabbing;
+}
+
+/* Hidden rather than unmounted: the component keeps one canvas for the life of
+   the page so the effect never has to rebind a context. */
+.pfp-canvas.is-hidden {
+	visibility: hidden;
+}
+
+/* The empty state IS the button, the way the screenshot picker's banner is. */
+.pfp-empty {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	/* The one control outside .pfp-controls, so it says the face itself. */
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	color: var(--ink-mid);
+	cursor: pointer;
+}
+
+/* The mark, at watermark strength - the same idea as the one printed on the
+   ticket, and the same face. It is what is missing from the square. */
+.pfp-empty-mark {
+	margin-bottom: 14px;
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 700;
+	font-size: 96px;
+	line-height: 0.76;
+	color: var(--ink);
+	opacity: 0.2;
+	transition: opacity 140ms ease;
+}
+
+.pfp-empty-line {
+	font-size: var(--text-sm);
+	color: var(--ink);
+}
+
+.pfp-empty-sub {
+	margin-top: 4px;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+@media (hover: hover) {
+	.pfp-empty:hover .pfp-empty-mark {
+		opacity: 0.34;
+	}
+}
+
+.pfp-empty:focus-visible {
+	outline: none;
+}
+
+.pfp-empty:focus-visible .pfp-empty-mark {
+	opacity: 0.34;
+}
+
+/* The wordmark's handle.
+
+   Invisible at rest, because the preview is the thing being judged and a box
+   drawn permanently around the mark would be judged along with it. It comes up
+   under the pointer and under focus.
+
+   Inflated past the ink it sits on by the padding, with the margin taking the
+   offset back off: the mark can be set small enough that its own bounds are a
+   few pixels tall, and a handle that tight is one nobody can catch.
+   content-box, so the padding adds to the width rather than eating it. */
+.pfp-mark-handle {
+	position: absolute;
+	box-sizing: content-box;
+	margin: -6px;
+	padding: 6px;
+	border: 1px dashed transparent;
+	border-radius: 4px;
+	background: none;
+	cursor: move;
+	/* The drag moves the mark; without this a touch drag scrolls the page out
+	   from under it. */
+	touch-action: none;
+	transition:
+		border-color 120ms ease,
+		background-color 120ms ease;
+}
+
+@media (hover: hover) {
+	.pfp-mark-handle:hover {
+		border-color: rgba(242, 239, 233, 0.7);
+		background-color: rgba(242, 239, 233, 0.08);
+	}
+}
+
+.pfp-mark-handle:focus-visible,
+.pfp-mark-handle.is-dragging {
+	outline: none;
+	border-color: rgba(242, 239, 233, 0.9);
+	background-color: rgba(242, 239, 233, 0.1);
+}
+
+/* ── the controls ────────────────────────────────────────────────────────── */
+
+/* Geist Sans, not the page's pixel face.
+
+   controls.css opens by saying the control system is Geist at 14px/1.43, and
+   .controls sets that face on itself for exactly this reason: the pixel face is
+   the hero's voice, and it is a display face. It reads well as a lede and badly
+   as eleven labels, a pair of sliders and three buttons stacked in a column.
+
+   Set once here and inherited, because .control-btn and .pfp-seg-btn both carry
+   `font: inherit` - so this is the only place that has to say it. */
+.pfp-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.pfp-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* The filter, as a card, closed.
+
+   A card rather than one more row in this column, because it is the one thing
+   here that is a PLACE: the other four controls are each a single decision and
+   read as a list, and this is a set of them with a door on it. So it takes the
+   material a container takes - the woven surface inside a line, the same
+   .pfp-seg wears - and the column's own rows go on sitting flat beside it.
+
+   Clipped, which is what makes the slide look like a drawer opening rather
+   than a panel growing: the body's rounded corners are the card's, and the
+   sliders arriving at partial height are cut off by them on the way. */
+.pfp-advanced {
+	overflow: hidden;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--surface);
+	background-image: var(--weave-bayer), var(--shade-inset);
+	transition: border-color 140ms ease;
+}
+
+.pfp-advanced.is-open {
+	border-color: var(--panel-line);
+}
+
+/* The door. Full width and the card's whole top edge, so the target is the
+   card rather than a word on it - a heading that turns out to be pressable is
+   only discoverable if pressing anywhere near it works. */
+.pfp-advanced-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	width: 100%;
+	padding: 13px 15px;
+	border: 0;
+	background: none;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		background-color 140ms ease,
+		color 120ms ease;
+}
+
+/* Open, the head steps up a level: the card is a thing you are inside now, and
+   at seven levels a step up the ramp is how this site says so - a colour would
+   not survive the quantiser and a shade brighter might not be a level at all. */
+.pfp-advanced.is-open .pfp-advanced-head {
+	background-color: var(--panel);
+}
+
+@media (hover: hover) {
+	.pfp-advanced-head:hover {
+		background-color: var(--panel);
+	}
+
+	.pfp-advanced-head:hover .pfp-label,
+	.pfp-advanced-head:hover .pfp-advanced-sign {
+		color: var(--ink);
+	}
+}
+
+.pfp-advanced-head:focus-visible {
+	outline: 1px dashed var(--ink);
+	outline-offset: -3px;
+}
+
+/* The sign, not a caret: a plus that becomes a minus is two glyphs that read
+   at this size on every platform, where a rotating triangle is one that does
+   not. The FAQ's rows say it the same way. */
+.pfp-advanced-sign {
+	flex: none;
+	width: 1em;
+	font-size: var(--text-sm);
+	line-height: 1;
+	text-align: center;
+	color: var(--ink-mid);
+	transition: color 120ms ease;
+}
+
+/* The wrapper the slide moves. Its height and opacity are written per frame
+   from the component, so it must not carry a transition of its own - two
+   things easing the same number is how motion ends up fighting itself. */
+.pfp-advanced-body {
+	overflow: hidden;
+}
+
+.pfp-advanced-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 4px 15px 15px;
+}
+
+/* The reset, and the "pick a photograph first" note beside it while there is
+   no photograph. Baseline-aligned rather than centred: the note wraps to two
+   lines in a narrow column, and a centred button would then float against the
+   middle of them. */
+.pfp-advanced-foot {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+
+/* The note is the half that may wrap; the button is not. */
+.pfp-advanced-foot .pfp-note {
+	flex: 1 1 auto;
+}
+
+/* `margin-left: auto` rather than space-between on the row, because most of
+   the time there is nothing to be spaced apart FROM: the note is only there
+   before a photograph is, and space-between would drop the lone button back to
+   the left the moment one arrived. */
+.pfp-advanced-foot .pfp-reset {
+	flex: none;
+	margin-left: auto;
+}
+
+/* The three tone sliders, closer together than .pfp-controls sets its rows -
+   they are one control with three parts rather than three controls, and the
+   group's own label is above them. */
+.pfp-dials {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.pfp-dial {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+/* Sentence case at the note's size, deliberately NOT .pfp-label: these sit
+   UNDER a heading rather than being headings, and three more lines of tracked
+   uppercase in one column reads as three more sections. */
+.pfp-dial-label {
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+/* A text button, because it undoes something rather than doing something - the
+   same relationship the dotted links in running text have to the page. It is
+   dim until there is something to undo, at which point it comes up to the ink. */
+.pfp-reset {
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: var(--text-xs);
+	color: var(--ink-mid);
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-underline-offset: 3px;
+	cursor: pointer;
+	transition: color 120ms ease;
+}
+
+.pfp-reset:disabled {
+	color: var(--ink-dim);
+	text-decoration: none;
+	cursor: default;
+}
+
+@media (hover: hover) {
+	.pfp-reset:not(:disabled):hover {
+		color: var(--ink);
+	}
+}
+
+.pfp-reset:focus-visible {
+	outline: 1px dashed var(--ink);
+	outline-offset: 3px;
+}
+
+/* The label over each control.
+
+   Weight 600, not the face's default 400. Small uppercase set on this much
+   tracking has very little ink per letter - the letterforms are short, the
+   counters are open, and the spacing pulls what is there even further apart -
+   so at a regular weight it reads as a faint rule of characters rather than as
+   a heading. Geist Sans is one variable file for every weight, so this costs
+   nothing to ask for. */
+.pfp-label {
+	font-size: var(--text-xs);
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--ink-mid);
+}
+
+/* The line under a control that says what it does, or what it is waiting for.
+   Small and dim: it is a caption, and it is read once. */
+.pfp-note {
+	font-size: var(--text-xs);
+	line-height: 1.45;
+	color: var(--ink-dim);
+}
+
+/* Saturated enough to redden with the field rather than sit grey next to it -
+   the same value .control-status.is-invalid uses, for the same reason. */
+.pfp-refused {
+	font-size: var(--text-xs);
+	line-height: 1.45;
+	color: #e08a92;
+}
+
+.pfp-wide,
+.pfp-download {
+	width: 100%;
+}
+
+/* The one-of-several control.
+
+   Radios would be the honest element and are the wrong one here: these set
+   three pictures, not three values on a form, and a row of radio dots beside a
+   512px preview reads as a questionnaire. So: buttons carrying aria-pressed,
+   which is what a toggle actually is, grouped and labelled so the group is
+   announced with them. */
+.pfp-seg {
+	display: flex;
+	overflow: hidden;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--surface);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.pfp-seg-btn {
+	flex: 1 1 0;
+	min-width: 0;
+	padding: 9px 10px;
+	border: 0;
+	border-right: 1px solid var(--line);
+	background: none;
+	font: inherit;
+	font-size: var(--text-sm);
+	/* `font: inherit` brings the column's 400 with it, which left these reading
+	   lighter than the .control-btn they sit beside. 500 is that button's weight,
+	   so the two kinds of button in this panel now match. */
+	font-weight: 500;
+	line-height: 1.4286;
+	color: var(--ink-dim);
+	cursor: pointer;
+	transition:
+		color 120ms ease,
+		background-color 120ms ease;
+}
+
+.pfp-seg-btn:last-child {
+	border-right: 0;
+}
+
+/* The chosen one turns inside out, exactly as .control-btn does on hover: the
+   dark surface goes light with dark type. A flip reads as a state where a shade
+   brighter does not - and at seven levels a shade brighter may not even be a
+   different level. */
+.pfp-seg-btn[aria-pressed='true'] {
+	/* A step above the others, so the chosen one is heavier as well as inverted.
+	   The segments are `flex: 1 1 0` and so equal-width whatever is in them -
+	   nothing moves when the weight changes. */
+	font-weight: 600;
+	color: var(--on-light);
+	background-color: var(--ink);
+	background-image: var(--weave-bayer), var(--shade-raised);
+}
+
+@media (hover: hover) {
+	.pfp-seg-btn:not([aria-pressed='true']):hover {
+		color: var(--ink);
+		background-color: var(--panel);
+	}
+}
+
+.pfp-seg-btn:focus-visible {
+	outline: none;
+	color: var(--ink);
+	background-color: var(--panel);
+}
+
+.pfp-seg-btn[aria-pressed='true']:focus-visible {
+	color: var(--on-light);
+	background-color: #ffffff;
+}
+
+/* The browser's own slider, tinted. Not a custom widget, for the reason
+   controls.css opens with: the native one already has the keyboard, the step,
+   the repeat and the assistive-tech mapping, and every one of those would have
+   to be rebuilt to gain a thumb of our own. */
+.pfp-range {
+	width: 100%;
+	accent-color: var(--ink);
+	cursor: pointer;
+}
+
+.pfp-range:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.pfp-out {
+	margin-top: 2px;
+}
+
+/* The verb carries the weight. What follows it is a specification - read once,
+   and never the thing being pressed - so it stays at the button's own 500. */
+.pfp-download-word {
+	font-weight: 700;
+}
+
+/* ── the foot ────────────────────────────────────────────────────────────── */
+
+/* The footer sits outside .pfp-inner, so it inherits neither that column's
+   gutter nor its bottom padding - which left the credit line resting on the
+   very bottom edge of the viewport. Its own padding on all three sides, with
+   the inline value matching the gutter .pfp-inner cuts from its width. */
+.pfp-foot {
+	margin-top: auto;
+	padding-block: clamp(32px, 6vh, 64px) clamp(28px, 4vh, 48px);
+	padding-inline: 24px;
+}
+
+.pfp-credit {
+	text-align: center;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+/* ── narrow ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 560px) {
+	.pfp-inner {
+		width: min(1080px, 100% - 32px);
+	}
+
+	.pfp-empty-mark {
+		font-size: 72px;
+	}
+}

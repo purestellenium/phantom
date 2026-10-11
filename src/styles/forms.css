@@ -1,0 +1,161 @@
+/* ── forms ───────────────────────────────────────────────────────────────── */
+
+/* A stack of labelled fields, as opposed to .controls which is the landing
+   page's single inline row. */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+/* A real <label>, always. A label that is only a styled span looks identical
+   and is a label screen readers never hear. */
+.form-label {
+	font-size: var(--text-xs);
+	font-weight: 500;
+	color: var(--ink);
+}
+
+.form-hint {
+	font-size: var(--text-xs);
+	line-height: 1.5;
+	color: var(--ink-dim);
+}
+
+/* A link in running text, anywhere in the shell: the ink, dotted, never the
+   browser's blue rule. Only classless anchors - every tab, card, row and
+   button link carries a class and its own treatment.
+
+   `:visited` is named explicitly, and it is not redundant. A page this dark has
+   no colour to spare, and the browser's visited purple is the one hue on the
+   screen that belongs to nobody's palette - it lands on a hint somebody read
+   yesterday and drags the eye straight to the least important thing on the
+   card. Where a link has been is not a fact this app has any use for. */
+.shell a:not([class]),
+.shell a:not([class]):visited,
+.form-hint a,
+.form-hint a:visited {
+	color: var(--ink);
+	text-decoration: underline dotted;
+	text-underline-offset: 2px;
+	overflow-wrap: anywhere;
+}
+
+.shell a:not([class]):hover,
+.shell a:not([class]):focus-visible,
+.form-hint a:hover,
+.form-hint a:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+.form-error {
+	font-size: var(--text-xs);
+	line-height: 1.5;
+	color: #e08a92;
+}
+
+/* Fields inside a form stretch, unlike the hero's, which is sized to
+   sit beside a button. */
+.form .control-input {
+	flex: 1 1 auto;
+	width: 100%;
+}
+
+.form-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* A whole form on one line, for the two-field kind that lives in a panel's
+   foot - adding a category, not editing one. Deliberately NOT `.form`: that
+   class stretches every input to the full width (see above), which is right
+   for a column of labelled fields and wrong for a row that has to end in a
+   button.
+
+   It wraps, so the narrow case is the same fields stacked rather than a row
+   squeezed past the point of being typable. `min-width` on the inputs is what
+   makes that happen at a sensible width instead of at the point where flex has
+   already crushed them to nothing - a text input's default minimum is its
+   content, which is no minimum at all when it is empty. */
+.form-inline {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.form-inline .control-input {
+	flex: 1 1 12ch;
+	min-width: 12ch;
+}
+
+/* A select.
+
+   The OPEN list is the platform's, so the closed control takes the field's
+   colours rather than its material: a flat slab in a column of woven boxes,
+   which is the honest shape of a control whose other half is not ours. The
+   custom caret is a glyph so at least the mark that says "this opens" matches
+   the rest. */
+.select-field {
+	position: relative;
+	display: block;
+	width: 100%;
+}
+
+.control-select {
+	/* No native appearance: the platform's arrow is a crisp vector mark in a
+     frame made of dither. The caret below is a glyph like the label. */
+	appearance: none;
+	width: 100%;
+	padding: 9px 34px 9px 15px;
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 1.4286;
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	cursor: pointer;
+}
+
+/* Focus steps the fill up one level, the same move .control-input makes when
+   you start typing in it - and the same reason there is no outline. */
+.control-select:focus,
+.control-select:focus-visible {
+	background-color: var(--level-panel);
+	border-color: var(--panel-line);
+	outline: none;
+}
+
+/* The mark that says this one opens. A filled triangle rather than a hairline
+   chevron: seven levels resolve area, not strokes, and an outline this size
+   comes out as two or three lit cells. pointer-events off, so the mark is part
+   of the control's hit area rather than a hole in it. */
+.select-caret {
+	position: absolute;
+	top: 50%;
+	right: 15px;
+	margin-top: -0.5em;
+	line-height: 1;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+	pointer-events: none;
+}
+
+/* The platform draws the open list, not us, so the only thing worth setting is
+   that its rows are legible against whatever it gives them. */
+.control-select option {
+	color: var(--ink);
+	background-color: var(--surface);
+}

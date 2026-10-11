@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "shop_locked" boolean DEFAULT false NOT NULL;

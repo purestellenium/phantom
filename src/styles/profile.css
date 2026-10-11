@@ -1,0 +1,45 @@
+/* ── the profile ─────────────────────────────────────────────────────────── */
+
+/* The face at the top of the account page: the Slack picture, dithered like
+   every photograph on the platform, in colour when reached. */
+.profile {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 4px 13px 10px;
+}
+
+.avatar {
+	display: block;
+	width: 96px;
+	height: 96px;
+	flex: none;
+	object-fit: cover;
+	border: 1px solid var(--panel-line);
+	border-radius: var(--control-radius);
+	background-color: var(--bg);
+	filter: url(#dither);
+}
+
+.avatar:hover {
+	filter: none;
+}
+
+.avatar-empty {
+	overflow: hidden;
+	filter: none;
+}
+
+.avatar-empty canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+	image-rendering: pixelated;
+}
+
+.profile-name {
+	min-width: 0;
+	font-size: var(--text-lg);
+	font-weight: 600;
+	color: var(--ink);
+}

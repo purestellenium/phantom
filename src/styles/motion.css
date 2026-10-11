@@ -1,0 +1,97 @@
+/* ── motion ──────────────────────────────────────────────────────────────── */
+
+/* How Phantom moves, in one place, so every page moves the same way.
+
+   The rule is that motion reports something - a page arriving, a step taken,
+   a state changing - and is never there to decorate. So it is short, it
+   travels a few pixels along one axis, and it decelerates to a stop the way a
+   thing with weight does. Nothing bounces, overshoots, spins or scales: those
+   read as a toy, and this is a place where people's hours are counted.
+
+   The pieces:
+
+   - `.rise`, for something arriving. Staggered by `--i` (its place in the
+     order) so a page assembles top to bottom rather than appearing at once.
+     The axis comes from `--dir-x` / `--dir-y`: vertical by default, and a
+     flow that steps sideways sets `--dir-x` to 1 or -1 on a container so
+     everything inside arrives from the side it is moving toward.
+   - `.lit`, for a control that has just become usable. It fades up from the
+     disabled material instead of swapping in, so "you can go on now" is seen
+     happening rather than noticed later. */
+
+:root {
+	/* Decelerate: quick off the mark, a long settle. */
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--dur-quick: 160ms;
+	--dur-settle: 560ms;
+	/* Between one arriving piece and the next. Tight - a list of six is done
+	   in a quarter of a second, not a performance. */
+	--stagger: 40ms;
+	--travel: 10px;
+}
+
+.rise {
+	animation: rise var(--dur-settle) var(--ease-out) backwards;
+	animation-delay: calc(var(--i, 0) * var(--stagger) + var(--rise-after, 0ms));
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translate(
+			calc(var(--dir-x, 0) * var(--travel)),
+			calc(var(--dir-y, 1) * var(--travel))
+		);
+	}
+}
+
+.lit {
+	animation: lit 420ms var(--ease-out) both;
+}
+
+@keyframes lit {
+	from {
+		color: var(--ink-dim);
+		background-color: var(--level-lift);
+		border-color: var(--panel-line);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rise,
+	.lit {
+		animation: none;
+	}
+}
+
+/* A button with an arrow in it: the arrow leans the way the button goes
+   when the pointer is on it - forward, or `.is-back` back - so it says
+   where it leads before it is pressed.
+
+   `a.nudge` as well as `.nudge`: a link drawn as a button is
+   `a.control-btn { display: inline-grid }` (controls-states.css), which
+   outranks a lone class - and as a grid, the word and its arrow become two
+   rows, one on top of the other, and the button doubles in height. The
+   element in the selector ties that, and this file coming last settles it. */
+.nudge,
+a.nudge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.nudge svg {
+	flex: none;
+	transition: transform var(--dur-quick) var(--ease-out);
+}
+
+@media (hover: hover) {
+	.nudge:hover svg {
+		transform: translateX(3px);
+	}
+
+	.nudge.is-back:hover svg {
+		transform: translateX(-3px);
+	}
+}

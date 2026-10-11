@@ -1,0 +1,201 @@
+/* ==========================================================================
+   PLATFORM - the surfaces the landing page does not have.
+
+   Everything below is built from the primitives above: the same radius, the
+   same weaves, the same ladder of fills. Where a new component needs a state,
+   it takes a step on the ramp rather than a new hue, because a hue that is not
+   red does not survive the quantiser as anything but a grey.
+   ========================================================================== */
+
+/* The frame every signed-in page sits in. A column: the nav, then the page,
+   then whatever the page pushes to the bottom. The field behind it is fixed, so
+   scrolling moves the content across a backdrop that holds still. */
+.shell {
+	position: relative;
+	width: 100%;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Bounded and centred. Full-width text on a wide monitor is unreadable at any
+   size, and this app is mostly prose and records rather than a canvas. */
+.shell-main {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 32px 24px 64px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+/* ── nav ─────────────────────────────────────────────────────────────────── */
+
+/* Deliberately not sticky. It scrolls away like everything else. */
+.nav {
+	width: 100%;
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 20px 24px 0;
+	display: flex;
+	align-items: center;
+	gap: 24px;
+}
+
+.nav-mark {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-size: 32px;
+	line-height: 1;
+	color: var(--fg);
+	text-decoration: none;
+}
+
+/* The wordmark and the flag are links, and a link with no focus rule of its own
+   gets the browser's default ring - which is precisely the crisp vector edge
+   this frame keeps out. Both were doing that.
+
+   They cannot take a fill the way the nav items do: one is a bare word sitting
+   on the ground and the other is a picture, so there is no surface on either
+   to step up a level. Brightness is what is left,
+   and on ink rather than on a box it still clears a level of the ramp. */
+.nav-mark:focus-visible,
+.foot-flag:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+/* One line, always. Wrapping a tab bar onto a second row leaves one orphan
+   tab under the wordmark, which reads as a layout mistake rather than as a
+   menu. When the tabs are wider than the row they slide sideways instead,
+   with the scrollbar hidden the same way the page's is. */
+.nav-links {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	margin-left: auto;
+	min-width: 0;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+}
+
+.nav-links::-webkit-scrollbar {
+	display: none;
+}
+
+/* A nav item is a row on the ramp, not a link with an underline. Underlines are
+   out, so "this is pressable" is carried by the fill it takes when you
+   reach it, and "you are here" by the fill it holds all the time. */
+.nav-link {
+	display: inline-grid;
+	place-items: center;
+	padding: 7px 10px;
+	border: 1px solid transparent;
+	border-radius: var(--control-radius);
+	color: var(--ink-dim);
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+	flex: 0 0 auto;
+	text-decoration: none;
+	cursor: pointer;
+	background-color: transparent;
+}
+
+/* The account tab: a tab like the others, with the face in front of the
+   handle. Small and round, dithered like every photograph, colour on hover. */
+.nav-link.nav-me {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px;
+	margin-left: 4px;
+}
+
+.nav-avatar {
+	display: block;
+	width: 28px;
+	height: 28px;
+	flex: none;
+	object-fit: cover;
+	border-radius: 50%;
+	background-color: var(--bg);
+}
+
+img.nav-avatar {
+	filter: url(#dither);
+}
+
+/* No picture upstream: the first letter of the handle on the light fill. */
+
+/* Colour on hover, on focus - and while you are on the account page. Being
+   there is the same "this tab is live" fact the fill carries on every other
+   tab; the avatar just spends it on saturation instead. */
+.nav-link.nav-me:hover .nav-avatar,
+.nav-link.nav-me:focus-visible .nav-avatar,
+.nav-link.nav-me[aria-current='page'] .nav-avatar {
+	filter: none;
+}
+
+/* Reached, or focused. Carried entirely by the fill, with NO EDGE.
+ *
+ * This used to be --level-surface with a --line border, and that combination is
+ * the one thing this file says not to build. On a panel
+ * --level-surface is a step down and reads fine; out here the nav sits on the
+ * ground, and the two are close enough that the quantiser drops them on the
+ * same level - so the fill vanished and the border was the only thing left. A
+ * hairline rounded rect with nothing inside it does not read as "focus is
+ * here". It reads as a box somebody forgot to clean up, which is exactly how it
+ * was reported: focus survives a client-side navigation and is only cleared by
+ * a reload, so the empty outline sat on a tab the reader had already left.
+ *
+ * --level-lift is two steps off the ground and cannot collapse into it, so the
+ * state is a filled chip and the edge is unnecessary. Ground, lift, ink: three
+ * levels, three states, no lines. */
+.nav-link:hover,
+.nav-link:focus-visible {
+	color: var(--ink);
+	background-color: var(--level-lift);
+	border-color: transparent;
+	background-image: var(--weave-bayer), var(--shade-inset);
+	outline: none;
+}
+
+/* "You are here" takes the light fill - the same screen-printed material as the
+   primary button and the good badge - rather than a step up the grey ramp.
+   Sitting one level above the hover state was too small a difference to read as
+   a state at all: at seven levels a panel-fill chip on the ground reads as an
+   empty outline rather than as the page you are on. The light fill is the one
+   move in the system that is unmistakably "this one". */
+.nav-link[aria-current='page'] {
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: transparent;
+	background-image: var(--weave-bayer), var(--shade-raised);
+}
+
+/* Focus on the page you are already on.
+ *
+ * This rule is not redundant, and leaving it out was a real hole. The
+ * current-page rule above and the focus rule before it carry identical
+ * specificity - a class plus one attribute against a class plus one
+ * pseudo-class - so the later of the two wins, which meant tabbing onto the
+ * current nav item repainted it as… the current nav item. No change, and with
+ * outlines removed there was no fallback ring underneath to notice either. A
+ * keyboard user landing there had nothing at all telling them where they were.
+ *
+ * Now that the current page wears the light fill, the move left is the one the
+ * button system already uses on that same material: go to pure white and open
+ * the weave. Same fill, brighter and busier, which keeps "you are here" and
+ * "you are focused here" legibly different without a fourth colour. */
+.nav-link[aria-current='page']:focus-visible {
+	background-color: #ffffff;
+	border-color: transparent;
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	outline: none;
+}

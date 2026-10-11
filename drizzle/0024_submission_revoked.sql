@@ -1,0 +1,1 @@
+ALTER TYPE "public"."submission_state" ADD VALUE 'revoked';

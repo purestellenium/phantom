@@ -1,0 +1,409 @@
+/* ── guides ──────────────────────────────────────────────────────────────── */
+
+/* The guides are long reading, set on a panel like every other page here, in
+   the same ramp and weaves. Nothing takes a new hue: code is a step down the
+   ladder, a callout is a step up, and only a warning is red. */
+
+/* Back to the list. A quiet word above the title, a step brighter when you
+   reach it, the same move .link makes. */
+.guide-back,
+.guide-back:visited {
+	align-self: flex-start;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+	text-decoration: none;
+}
+
+.guide-back:hover,
+.guide-back:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+/* Contents on the left, the guide on the right, like a wiki. The page takes
+   the wider column the product page does, so the prose keeps its measure
+   beside the contents. */
+.shell-main:has(> .guide.has-toc) {
+	max-width: 1180px;
+}
+
+.guide {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.guide.has-toc {
+	display: grid;
+	grid-template-columns: 250px minmax(0, 1fr);
+	gap: 24px;
+	align-items: start;
+}
+
+/* The title and the guide both in the right-hand column; the left one is
+   kept clear for the contents, fixed over it. */
+.guide.has-toc .guide-main {
+	display: contents;
+}
+
+.guide.has-toc .page-head {
+	grid-area: 1 / 2;
+}
+
+.guide.has-toc .guide-main > article {
+	grid-area: 2 / 2;
+}
+
+/* Fixed to the window, centred top to bottom, over the empty left-hand
+   column: it never moves while the guide scrolls. Its left edge is the
+   shell's, worked out from the 1180px column and its 24px of padding. A long
+   list scrolls inside itself rather than running off the screen. */
+.guide-side {
+	position: fixed;
+	top: 50%;
+	left: max(24px, calc((100vw - 1180px) / 2 + 24px));
+	width: 250px;
+	max-height: calc(100dvh - 48px);
+	transform: translateY(-50%);
+	z-index: 1;
+}
+
+/* The title, the lede and the guide, stacked in the right-hand column. */
+.guide-main {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	min-width: 0;
+}
+
+.guide-side .guide-toc {
+	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+/* "On this page": one row per section, down the side. */
+.guide-toc {
+	display: grid;
+	gap: 2px;
+	list-style: none;
+}
+
+/* Numbered, the same mono index the setup checklist on /home counts its
+   steps with. */
+.guide-toc .row {
+	grid-template-columns: auto 1fr;
+	align-items: baseline;
+}
+
+.guide-toc-idx {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+.guide-toc .row:hover .guide-toc-idx,
+.guide-toc .row:focus-visible .guide-toc-idx {
+	color: var(--ink);
+}
+
+/* The section being read. The light fill the live filter chip takes, for the
+   reason filters.css gives: a panel-fill row reads as an outline, not as
+   where you are. */
+.guide-toc .row[aria-current='location'] {
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: transparent;
+	background-image: var(--weave-bayer), var(--shade-raised);
+}
+
+.guide-toc .row[aria-current='location'] .guide-toc-idx {
+	color: var(--on-light);
+}
+
+/* Focused as well: brighter and busier, so the two still read apart. */
+.guide-toc .row[aria-current='location']:focus-visible {
+	background-color: #ffffff;
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+}
+
+/* ── the prose ───────────────────────────────────────────────────────────── */
+
+/* Block flow, not the panel body's flex column: prose is spaced by what each
+   block is, and a heading wants more air above it than a paragraph does. */
+.guide-prose {
+	display: block;
+	padding: 22px 24px 30px;
+	font-size: var(--text-base);
+	line-height: 1.7;
+	color: var(--ink-mid);
+	overflow-wrap: break-word;
+}
+
+.guide-prose > * + * {
+	margin-top: 14px;
+}
+
+.guide-prose strong {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* The panel title's face, a size up: these are the stops in a long read. */
+.guide-prose h2 {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: 34px;
+	line-height: 1.1;
+	color: var(--fg);
+	scroll-margin-top: 24px;
+}
+
+.guide-prose > h2:not(:first-child) {
+	margin-top: 44px;
+}
+
+.guide-prose h3 {
+	font-size: var(--text-md);
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--ink);
+	scroll-margin-top: 24px;
+}
+
+.guide-prose > h3:not(:first-child) {
+	margin-top: 30px;
+}
+
+.guide-prose h4 {
+	font-size: var(--text-base);
+	font-weight: 600;
+	color: var(--ink-mid);
+	scroll-margin-top: 24px;
+}
+
+.guide-prose > h4:not(:first-child) {
+	margin-top: 24px;
+}
+
+.guide-prose ul,
+.guide-prose ol {
+	padding-left: 1.4em;
+}
+
+.guide-prose li + li,
+.guide-prose li > ul,
+.guide-prose li > ol {
+	margin-top: 4px;
+}
+
+.guide-prose li::marker {
+	color: var(--ink-dim);
+}
+
+/* Inline code: the mono face on a chip a level up. */
+.guide-prose code {
+	padding: 1px 6px;
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-size: 0.86em;
+	color: var(--ink);
+	background-color: var(--level-lift);
+	border: 1px solid var(--panel-line);
+	border-radius: 6px;
+}
+
+/* A code block sinks a level below the panel instead: a well you read out
+   of. No syntax colours, because nothing but red survives the quantiser as a
+   hue. Scrolls inside itself rather than widening the page. */
+.guide-prose pre {
+	padding: 13px 15px;
+	overflow-x: auto;
+	font-size: var(--text-xs);
+	line-height: 1.65;
+	color: var(--ink);
+	background-color: var(--level-surface);
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-image: var(--weave-bayer), var(--shade-inset);
+	scrollbar-width: thin;
+}
+
+.guide-prose pre code {
+	padding: 0;
+	font-size: inherit;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	white-space: pre;
+}
+
+.guide-prose blockquote {
+	padding-left: 14px;
+	border-left: 2px solid var(--panel-line);
+	color: var(--ink-dim);
+}
+
+.guide-prose hr {
+	margin: 32px 0;
+	border: 0;
+	border-top: 1px solid var(--panel-line);
+}
+
+/* Screenshots are left in colour, undithered: a guide's picture is an
+   instruction to read, not a photograph to set on the page. */
+.guide-prose img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--level-lift);
+}
+
+.guide-prose table {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	font-size: 15px;
+}
+
+.guide-prose th,
+.guide-prose td {
+	padding: 8px 12px 8px 0;
+	text-align: left;
+	vertical-align: top;
+	border-bottom: 1px solid var(--panel-line);
+}
+
+.guide-prose th {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* ── asides (Starlight's :::note, :::tip, :::caution, :::danger) ─────────── */
+
+/* The notice, at prose scale. */
+.guide-aside {
+	padding: 13px 15px;
+	color: var(--ink);
+	background-color: var(--level-lift);
+	border: 1px solid var(--panel-line);
+	border-radius: var(--control-radius);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.guide-aside > * + * {
+	margin-top: 6px;
+}
+
+.guide-aside-title {
+	font-weight: 600;
+}
+
+.guide-aside.is-caution,
+.guide-aside.is-danger {
+	color: #f3ccd0;
+	background-color: #3a1519;
+	border-color: #c2414c;
+	background-image: var(--weave-alarm);
+}
+
+/* ── copying code ────────────────────────────────────────────────────────── */
+
+/* Each code block carries a copy button in its corner (the renderer adds it,
+   the guide page wires it up). Room is left on the first line so a short
+   command never runs under it. */
+.guide-code {
+	position: relative;
+}
+
+.guide-code pre {
+	padding-right: 72px;
+}
+
+.guide-copy {
+	position: absolute;
+	top: 7px;
+	right: 7px;
+	padding: 3px 9px;
+	font: inherit;
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+	background-color: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 7px;
+	cursor: pointer;
+}
+
+.guide-copy:hover,
+.guide-copy:focus-visible {
+	color: var(--ink);
+	border-color: var(--panel-line);
+	outline: none;
+}
+
+/* ── what to read next ───────────────────────────────────────────────────── */
+
+.guide-after {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* Beside the contents column, the guide's own column is laid out cell by
+   cell (.guide-main is `display: contents` there), so this takes the row
+   under the article - otherwise it falls into the contents' column. */
+.guide.has-toc .guide-after {
+	grid-area: 3 / 2;
+}
+
+.guide-after-label {
+	margin: 0;
+	font-size: var(--text-xs);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--ink-dim);
+}
+
+.guide-prev {
+	align-self: flex-start;
+}
+
+/* No room for a side column: the contents go back above the guide and
+   scroll away with it. */
+@media (max-width: 900px) {
+	.guide.has-toc {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* The title first, then the contents, then the guide. */
+	.guide.has-toc .page-head,
+	.guide.has-toc .guide-main > article,
+	.guide.has-toc .guide-after {
+		grid-area: auto;
+	}
+
+	.guide.has-toc .page-head {
+		order: -1;
+	}
+
+	.guide-side {
+		position: static;
+		width: auto;
+		max-height: none;
+		transform: none;
+	}
+}
+
+@media (max-width: 560px) {
+	.guide-prose {
+		padding: 16px 16px 24px;
+	}
+
+	.guide-prose h2 {
+		font-size: 29px;
+	}
+}

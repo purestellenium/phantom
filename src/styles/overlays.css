@@ -1,0 +1,134 @@
+/* ── the danger zone ─────────────────────────────────────────────────────── */
+
+/* Reviewer and operator doors, fixed bottom right, above the vignette. Red
+   is reserved for errors everywhere else in this file; these are the one
+   deliberate abuse of that, because only staff see them and a staff door
+   should look like something you do not lean on. */
+.danger-zone {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	z-index: 4;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 12px;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.danger-btn {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	min-width: 180px;
+	padding: 16px 28px;
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #fff1f2;
+	background-color: #c2414c;
+	background-image: var(--weave-alarm), var(--shade-raised);
+	border: 5px solid #ffd60a;
+	/* Hazard stripes painted into the border, with a soft edge between the
+	   yellow and the black: the filter below turns that ramp into dots. */
+	border-image: repeating-linear-gradient(-45deg, #ffd60a 0 6px, #17161a 13px 19px, #ffd60a 26px) 5;
+	transform: rotate(-1.5deg);
+	/* Everything on the button, glow included, through the colour dither (see
+	   Dither.svelte): the glow and the stripe edges come out as ordered dots. */
+	filter: url(#dither-colour);
+	transition:
+		transform 120ms ease,
+		background-color 120ms ease;
+}
+
+/* The glow: a soft red halo behind the button, dithered by the filter on its
+   parent. Its breathing is the throb. */
+.danger-btn::before {
+	content: '';
+	position: absolute;
+	inset: -30px;
+	z-index: -1;
+	background-image: radial-gradient(
+		ellipse at center,
+		rgba(194, 65, 76, 0.95) 0%,
+		rgba(194, 65, 76, 0.5) 45%,
+		rgba(194, 65, 76, 0) 72%
+	);
+	animation: danger-throb 1.6s ease-in-out infinite;
+}
+
+.danger-btn + .danger-btn {
+	transform: rotate(1.5deg);
+}
+
+.danger-btn + .danger-btn::before {
+	animation-delay: 0.8s;
+}
+
+.danger-btn:hover,
+.danger-btn:focus-visible {
+	color: #17161a;
+	background-color: #ffd60a;
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	transform: rotate(0deg) scale(1.08);
+	outline: none;
+	animation: danger-shake 0.25s linear infinite;
+}
+
+.danger-btn:hover::before,
+.danger-btn:focus-visible::before {
+	background-image: radial-gradient(
+		ellipse at center,
+		rgba(255, 214, 10, 0.9) 0%,
+		rgba(255, 214, 10, 0.45) 45%,
+		rgba(255, 214, 10, 0) 72%
+	);
+}
+
+@keyframes danger-throb {
+	0%,
+	100% {
+		opacity: 0.55;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+@keyframes danger-shake {
+	0% {
+		transform: rotate(-2deg) scale(1.08);
+	}
+	50% {
+		transform: rotate(2deg) scale(1.08);
+	}
+	100% {
+		transform: rotate(-2deg) scale(1.08);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.danger-btn,
+	.danger-btn::before,
+	.danger-btn:hover,
+	.danger-btn:focus-visible {
+		animation: none;
+	}
+}
+
+@media (max-width: 700px) {
+	.danger-zone {
+		right: 12px;
+		bottom: 12px;
+		gap: 8px;
+	}
+
+	.danger-btn {
+		min-width: 0;
+		padding: 12px 18px;
+		font-size: 17px;
+	}
+}

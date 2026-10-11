@@ -1,0 +1,29 @@
+node_modules
+
+# Output
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+dev.log
+
+# Agent tooling written into the repo by an editor, not by the project
+.codex/
+.claude/
+
+# The project installs with bun (bun.lock); another package manager's files stay local
+pnpm-lock.yaml
+pnpm-workspace.yaml

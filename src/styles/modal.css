@@ -1,0 +1,157 @@
+/* ── the plus card ───────────────────────────────────────────────────────── */
+
+/* The way to start a project: the last card in the grid rather than a button
+   over it. Dashed like the empty screenshot slot, because both are a place
+   where something is not yet. */
+.card-new {
+	display: grid;
+	place-items: center;
+	min-height: 150px;
+	padding: 0;
+	font: inherit;
+	font-size: 40px;
+	line-height: 1;
+	/* --ink-mid, not --ink-dim. This is the only card in the grid with no fill
+	   of its own - the others sit on --surface and this one is transparent on
+	   the ground - so it was already a step back from its neighbours before the
+	   dimmest ink in the ramp was put on it, and at rest the plus was receding
+	   on three counts at once. --ink-mid is the token written for this exact
+	   case: clearly readable, still a step under the thing it sits beside.
+
+	   The fill stays transparent. The dashes and the empty middle are what say
+	   "something is not yet here" - the same language the empty screenshot slot
+	   uses - and filling it in would make it read as a card with nothing in it
+	   rather than a place to start one. Hover still has a full step to make:
+	   --ink plus a surface under it.
+
+	   It matters most where there is no hover at all. On a touch screen the
+	   resting state is the only state, so `@media (hover: hover)` below is not a
+	   fallback for this - it is an enhancement on top of it. */
+	color: var(--ink-mid);
+	background-color: transparent;
+	border-style: dashed;
+	cursor: pointer;
+	background-image: var(--weave-bayer), var(--shade-inset);
+	transition:
+		color 120ms ease,
+		background-color 120ms ease;
+}
+
+@media (hover: hover) {
+	.card-new:hover {
+		color: var(--ink);
+		background-color: var(--level-surface);
+		outline: none;
+	}
+}
+
+.card-new:focus-visible {
+	color: var(--ink);
+	background-color: var(--level-surface);
+	outline: none;
+}
+
+/* ── modal ───────────────────────────────────────────────────────────────── */
+
+/* A panel in the top layer. Same material as .panel; the backdrop is the
+   ground with most of the light taken out of it. */
+.modal {
+	width: min(640px, calc(100% - 32px));
+	max-height: calc(100dvh - 32px);
+	padding: 0;
+	margin: auto;
+	color: var(--ink);
+	background-color: var(--level-panel);
+	border: 1px solid var(--panel-line);
+	border-radius: var(--control-radius);
+	/* A panel by another name, and as big as one - so the wide weave, for the
+	   reason given on the token. */
+	background-image: var(--weave-grid-wide), var(--shade-inset);
+	overflow: auto;
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	/* The panel rises and fades in; the backdrop only fades. `display` and
+	   `overlay` are in the transition property list, `allow-discrete`d, because
+	   both are the properties that actually gate whether this is in the top
+	   layer at all - without them the browser removes the dialog from the
+	   render tree the instant `open` is dropped, and the reverse transition (see
+	   below) never gets a frame to run. */
+	transition:
+		opacity 160ms ease,
+		transform 160ms ease,
+		overlay 160ms ease allow-discrete,
+		display 160ms ease allow-discrete;
+	opacity: 0;
+	transform: translateY(10px) scale(0.98);
+}
+
+.modal[open] {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+/* The starting point for the transition INTO `[open]`. Without this the
+   browser has no prior frame to animate from - the dialog does not exist in
+   the render tree a moment before `showModal()` - so the open state would
+   just appear. */
+@starting-style {
+	.modal[open] {
+		opacity: 0;
+		transform: translateY(10px) scale(0.98);
+	}
+}
+
+/* The way OUT, and why it is a class rather than the mirror of the block
+   above: `@starting-style` only ever supplies a FIRST frame, for a dialog
+   that is not in the render tree yet. Closing runs the opposite direction -
+   the dialog is already fully rendered - so it needs no starting point, only
+   a target to transition to. That target is applied by script (see the
+   `+page.svelte` this styles), which holds the dialog open across the
+   transition and calls `close()` only once it has actually finished
+   animating out; without that, `dialog.close()` would drop the element from
+   the top layer on the same frame the class is added, and there would be
+   nothing left to animate. */
+.modal[open].is-closing {
+	opacity: 0;
+	transform: translateY(10px) scale(0.98);
+}
+
+.modal::backdrop {
+	background-color: rgba(10, 10, 12, 0);
+	transition:
+		background-color 160ms ease,
+		overlay 160ms ease allow-discrete,
+		display 160ms ease allow-discrete;
+}
+
+.modal[open]::backdrop {
+	background-color: rgba(10, 10, 12, 0.72);
+}
+
+.modal[open].is-closing::backdrop {
+	background-color: rgba(10, 10, 12, 0);
+}
+
+@starting-style {
+	.modal[open]::backdrop {
+		background-color: rgba(10, 10, 12, 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.modal,
+	.modal::backdrop {
+		transition-duration: 0ms;
+	}
+}
+
+/* The sticky header has to be opaque, so it repaints the modal's own surface
+   rather than letting the body scroll through it - which means it has to match
+   the modal exactly. Both halves of that are one decision: if this keeps the
+   tighter tile while the modal above takes the wide one, the header becomes a
+   visibly different material sliding over the thing it belongs to. */
+.modal .panel-head {
+	position: sticky;
+	top: 0;
+	background-color: var(--level-panel);
+	background-image: var(--weave-grid-wide), var(--shade-inset);
+}

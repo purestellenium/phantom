@@ -1,0 +1,158 @@
+/* Landing notices and controls share one width and one vertical rhythm. */
+.landing-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	/* Narrower than it was (465px, then 420px). The field and the two buttons
+	   are cut from this one number - the field spans the grid and each button
+	   takes half of it - so the row shortens as a block and the pair below
+	   stays flush with the field above.
+
+	   363px is the floor to stop at rather than a target to reach: that is the
+	   lede's measure, and a control cluster the same width as the paragraph
+	   above it stops reading as the thing to do and starts reading as another
+	   line of the prose. This keeps a little over it. */
+	max-width: 390px;
+	/* --lede-space-below of visible air under the lede's letters, measured off
+	   those rather than off its box. The field is a hard-edged box with no
+	   leading of its own, so only the lede's side needs backing out. It runs a
+	   step tighter than the gap above the lede; see the tokens for why.
+
+	   Every token here is declared on .inner-page. Rendered outside the hero
+	   column they are all undefined, the calc is invalid, and margin-top falls
+	   back to 0 - which is the right answer there, and the reason none of them
+	   carries a fallback value. */
+	margin-top: calc(var(--lede-space-below) - var(--lede-lead-bottom) - var(--col-gap));
+	/* Geist Sans, not the hero's pixel face.
+
+	   Everything in this box is the platform's, borrowed onto the landing page:
+	   the same notices, the same field and the same buttons that are set in
+	   Geist everywhere behind a session. .inner-page hands its children Geist
+	   Pixel Square, which is right for the title block and the lede and wrong
+	   for a sentence explaining that a sign-in was refused - at 13px the square
+	   face costs enough legibility that the notice reads as decoration rather
+	   than as something to act on.
+
+	   Set here rather than on each piece: .controls already re-declared it for
+	   itself, and .landing-auth, the sign-out form and every .notice would each
+	   have needed the same line. One declaration on the box they all sit in. */
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.landing-actions > .notice {
+	width: 100%;
+}
+
+/* The waiting-list row, on the same grid the sign-in form uses once the site
+   is open: the field spans the first row, the two actions split the second at
+   one size, and the status line spans again beneath. One geometry for both
+   states of the hero, so opening the site moves nothing. */
+.landing-actions .controls {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin-top: 0;
+}
+
+.landing-actions .controls .control-input {
+	grid-column: 1 / -1;
+	flex: none;
+	width: 100%;
+	min-width: 0;
+}
+
+.landing-actions .controls .control-btn {
+	width: 100%;
+	min-width: 0;
+}
+
+.landing-actions .controls .control-status {
+	grid-column: 1 / -1;
+}
+
+/* Closed: one action, so the field and the button share a line rather than
+   the button sitting alone under it. Open, the two actions split the row
+   beneath, as above.
+
+   The row fills the column, and that is what keeps it flush with the notices
+   over it - the line at the top of this file promises they share one width,
+   and this is the state where that had stopped being true. The field used to
+   stop at 260px, the measure the landing page had before the platform, which
+   with the button's own ~92px left the pair ending about 28px short of the
+   column. Nothing drew that gap, so it read as the notice being too wide
+   rather than the row being too short. The button still takes its own width;
+   the field takes whatever is left. */
+.landing-actions .controls.is-solo {
+	display: flex;
+	/* The field and the button hold one line between them. The status line
+	   underneath is the only thing that wraps. */
+	flex-wrap: wrap;
+}
+
+.landing-actions .controls.is-solo .control-input {
+	flex: 1 1 120px;
+	width: auto;
+}
+
+.landing-actions .controls.is-solo .control-btn {
+	flex: none;
+	width: auto;
+	min-width: 92px;
+}
+
+/* The landing page's control cluster. The controls themselves are the
+   platform's, unchanged.
+
+   The field spans the first row; the two actions split the row beneath it. */
+.landing-auth {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	width: 100%;
+}
+
+.landing-auth .control-input {
+	grid-column: 1 / -1;
+	width: 100%;
+	min-width: 0;
+}
+
+.landing-auth .control-btn {
+	width: 100%;
+	min-width: 0;
+}
+
+.landing-auth > :only-child {
+	grid-column: 1 / -1;
+}
+
+/* ── the phone ───────────────────────────────────────────────────────────── */
+
+/* On a phone the hero column is not half the screen, it IS the screen - 78vw
+   once .inner-page's 11vw inset is off both sides - and the cluster was still
+   being held to the desktop measure inside it. Measured at a 684px viewport:
+   a 534px column with the field and buttons stopping at 390px, and the closed
+   state worse, its field pinned to 260px next to a 93px button with 180px of
+   dead column beside them. The cap only stopped binding once the screen got
+   narrow enough to be under it anyway, which is why it read as the controls
+   scaling wrong rather than as a width being wrong.
+
+   It is doing nothing for a single-column layout, so it comes off and the row
+   takes the column. The proportions inside it - the field over the two
+   actions, or the field beside the one - are untouched; they just have the
+   whole width to divide now.
+
+   The field's own 260px cap used to come off here too. It no longer exists at
+   any width: the closed row fills its column everywhere now, so the notices
+   above it line up on a phone for the same reason they line up on a desktop.
+
+   Here rather than in landing-narrow.css on purpose. THE ORDER OF THE IMPORTS
+   IS THE CASCADE (see globals.css): that file is imported well before this one,
+   so a .landing-actions rule there loses to the one above at the same
+   specificity, and this would silently not apply. */
+@media (max-width: 700px) {
+	.landing-actions {
+		max-width: none;
+	}
+}

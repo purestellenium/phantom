@@ -1,0 +1,275 @@
+/* ── figures ─────────────────────────────────────────────────────────────── */
+
+/* A number worth looking at, with its name under it. Set large in the mono
+   face: at seven levels a big figure is one of the few things that can carry
+   detail, and tabular figures keep a row of them from shuffling as they change. */
+.figures {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+/* A figure standing on the page itself is a CARD, and takes a card's material:
+   the panel fill, the panel's edge, the wide weave a reading surface wears. It
+   used to take --level-lift wherever it appeared, which is a rung ABOVE a
+   panel - correct inside one, and wrong out here, where it made a row of tiles
+   read a step brighter than every other card on the page for no reason the
+   reader could name. */
+.figure {
+	flex: 1 1 140px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 14px 15px;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--level-panel);
+	background-image: var(--weave-grid-wide), var(--shade-inset);
+}
+
+/* Inside a panel it steps up off the surface it is on instead, which is the
+   relationship it was drawn for and what the console's figures have always
+   looked like. Same ladder, one rung along, chosen by what is underneath. */
+.panel .figure {
+	border-color: var(--panel-line);
+	background-color: var(--level-lift);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.figure-value {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: 27px;
+	line-height: 1.1;
+	color: var(--ink);
+}
+
+/* --ink-mid, which is the token written for this: a caption that sits a step
+   under the figure above it and still reads. --ink-dim on the old lift fill was
+   about 2:1 - a label nobody could read on any surface, which is why the value
+   above it looked like it had no name. */
+.figure-label {
+	font-size: var(--text-xs);
+	color: var(--ink-mid);
+}
+
+/* ── the goal meter ──────────────────────────────────────────────────────── */
+
+/* Progress toward the 50-hour goal, told the way the rest of the system tells
+   state: not a colour but a step up the ramp. The track is a recessed channel
+   two levels down - the same "waiting" material an empty input wears - and the
+   fill is the brightest surface, raised. A full bar reads as light rising out of
+   dark, which survives the seven-level quantiser where a hue would not. */
+.goal {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.goal-figure {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	margin: 0;
+}
+
+.goal-value {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: clamp(30px, 7vw, 40px);
+	line-height: 1;
+	color: var(--ink);
+}
+
+.goal-target {
+	font-size: var(--text-sm);
+	color: var(--ink-mid);
+}
+
+/* Through to the shop, where the invite is actually sold.
+
+   Flex rather than the inline-grid `a.control-btn` gives an anchor, and for the
+   same reason .card-cta is: the label is two children - the words and the hours
+   figure - and a grid puts each on its own row. The gap replaces the word space
+   a flex container trims, and adds to the figure's own leading margin so the
+   clock reads as part of the price rather than of the words in front of it.
+
+   Left, not stretched. The panel body is a flex column, so a button in it takes
+   the full width unless it says otherwise, and a control the width of the page
+   reads as the page's one action rather than as this panel's.
+
+   Two classes in the selector rather than one, because it has to outrank
+   `a.control-btn` - which is where the inline-grid comes from, and which is
+   also a class and an element. A bare `.goal-buy` loses that tie by source
+   order and the price drops onto its own line under the words. */
+.control-btn.goal-buy {
+	display: inline-flex;
+	align-items: center;
+	align-self: flex-start;
+	gap: 0.28em;
+	white-space: nowrap;
+}
+
+/* A readout, not a scrollbar: square, cut into cells, with light running
+   through the filled part and a head cell that flickers at the edge of it.
+   The cells come from a mask over the whole track, so the fill and the
+   empty part share one grid. */
+.meter {
+	position: relative;
+	height: 28px;
+	padding: 3px;
+	border: 1px solid var(--line);
+	border-radius: 3px;
+	background-color: var(--bg);
+	overflow: hidden;
+}
+
+.meter-fill {
+	position: relative;
+	z-index: 1;
+	display: block;
+	height: 100%;
+	width: var(--fill, 0%);
+	background-color: var(--level-raise);
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+	/* The cells. */
+	mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+	animation: meter-glitch 7s steps(1) infinite;
+}
+
+/* The light running across the filled part. */
+.meter-fill::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background-image: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0) 35%,
+		rgba(255, 255, 255, 0.55) 50%,
+		rgba(255, 255, 255, 0) 65%,
+		transparent 100%
+	);
+	background-size: 160px 100%;
+	background-repeat: no-repeat;
+	animation: meter-sweep 2.6s linear infinite;
+}
+
+/* The empty part: the same cells, unlit. */
+.meter::after {
+	content: '';
+	position: absolute;
+	inset: 3px;
+	background-color: var(--level-surface);
+	mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+}
+
+@keyframes meter-sweep {
+	0% {
+		background-position: -160px 0;
+	}
+	100% {
+		background-position: calc(100% + 160px) 0;
+	}
+}
+
+/* Every few seconds the fill slips a cell and snaps back: two frames of
+   noise on an otherwise steady reading. */
+@keyframes meter-glitch {
+	0%,
+	91% {
+		transform: none;
+		opacity: 1;
+	}
+	92% {
+		transform: translateX(2px);
+		opacity: 0.7;
+	}
+	93% {
+		transform: translateX(-3px);
+		opacity: 1;
+	}
+	94% {
+		transform: translateX(1px);
+		opacity: 0.85;
+	}
+	95%,
+	100% {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.meter-fill,
+	.meter-fill::before {
+		animation: none;
+	}
+}
+
+/* A tile that is a link: the guides, on /home. It wears the button's own
+   material - the light fill and dark type of .control-btn - so it reads as
+   the one thing in the row to press, not a third number. Reaching it turns
+   it inside out the way the button does, and the arrow moves off toward
+   where it goes. */
+.figure-link {
+	position: relative;
+	text-decoration: none;
+	cursor: pointer;
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: var(--ink);
+	background-image: var(--weave-bayer), var(--shade-raised);
+	transition:
+		background-color 120ms ease,
+		color 120ms ease,
+		border-color 120ms ease;
+}
+
+.figure-link .figure-value,
+.figure-link .figure-label,
+.figure-link .figure-go {
+	color: inherit;
+}
+
+.figure-link:hover,
+.figure-link:focus-visible {
+	color: var(--ink);
+	background-color: var(--surface);
+	border-color: var(--panel-line);
+	background-image: var(--weave-bayer-hard), var(--shade-inset);
+	outline: none;
+}
+
+.figure-go {
+	position: absolute;
+	top: 14px;
+	right: 15px;
+	font-size: 20px;
+	line-height: 1;
+	transition: transform 120ms ease;
+}
+
+.figure-link:hover .figure-go,
+.figure-link:focus-visible .figure-go {
+	transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.figure-link:hover .figure-go,
+	.figure-link:focus-visible .figure-go {
+		transform: none;
+	}
+}
+
+/* The guides tile names a place rather than a count, so it takes the face the
+   guides page is titled in - the panel title's italic serif - not the mono
+   the figures beside it are counted in. */
+.figure-value.figure-title {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: 30px;
+	line-height: 1;
+	font-variant-numeric: normal;
+}

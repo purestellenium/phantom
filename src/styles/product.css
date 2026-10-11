@@ -1,0 +1,219 @@
+/* ── the product page ────────────────────────────────────────────────────── */
+
+/* Picture on the left, everything else on the right; one column on a phone.
+   The page takes a wider column than the rest of the shell, so the picture
+   gets room. */
+.shell-main:has(> .product) {
+	max-width: 1180px;
+}
+
+.product {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 40px;
+	align-items: start;
+}
+
+.product-gallery {
+	position: sticky;
+	top: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.product-image {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	border: 1px solid var(--panel-line);
+	border-radius: var(--control-radius);
+	background-color: var(--bg);
+	image-rendering: pixelated;
+}
+
+/* The one place on the platform a photograph is shown undithered: this is the
+   page you are on to decide whether you want the thing, so the picture is the
+   product rather than texture. The cards that got you here still dither. */
+img.product-image {
+	image-rendering: auto;
+}
+
+/* A product that asked for padding on its card gets it here too, and for the
+   same reason: the value exists because the picture is a cut-out rather than
+   a photograph, and cropping a cut-out square is exactly what the padding was
+   set to avoid. `contain` goes with it, as on the cards - padding a covered
+   image only crops it harder. */
+.product-image.is-padded {
+	object-fit: contain;
+}
+
+/* ── the strip ───────────────────────────────────────────────────────────── */
+
+/* The other pictures, under the one on show. A wrapping row rather than a
+   scroller: the gallery is capped at nine frames including the cover (see
+   MAX_GALLERY), which is two rows at this size on the narrowest column the
+   page has, and a scroller would hide frames behind a gesture for no gain. */
+.frames {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Each frame is a button the size of its picture, undithered like the picture
+   above it; the one on show takes the panel edge and a step up off the ground,
+   which is how it reads as selected without a colour. */
+.frame {
+	display: block;
+	width: 64px;
+	height: 64px;
+	padding: 0;
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-color: var(--bg);
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.frame img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.frame:focus-visible,
+.frame[aria-current] {
+	border-color: var(--panel-line);
+	outline: none;
+}
+
+/* The one on show, and only that one: a step up off the ground so the strip
+   reads as a row with a position in it rather than as six equal buttons. */
+.frame[aria-current] {
+	background-color: var(--level-lift);
+}
+
+.product-details {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.product-name {
+	font-family: var(--font-instrument), ui-serif, Georgia, serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: clamp(34px, 5vw, 48px);
+	line-height: 1;
+	color: var(--fg);
+}
+
+/* "from", in front of a price that some configuration can raise. Smaller and
+   dimmer than the figure and in the body face rather than the mono one, so it
+   reads as a qualifier on the number rather than as part of it - the number is
+   what the eye is here for. */
+.product-from {
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	font-size: var(--text-sm);
+	font-weight: 400;
+	color: var(--ink-dim);
+	margin-inline-end: 0.35em;
+}
+
+.product-price {
+	font-size: 34px;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--fg);
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.product-desc {
+	max-width: 52ch;
+	font-size: var(--text-base);
+	line-height: 1.6;
+	color: #cfcac2;
+	/* The line breaks an operator typed into the textarea, kept. Nothing on the
+	   way in removes them - the draft only trims the ends - so without this they
+	   reach the page intact and HTML quietly folds them into spaces, which reads
+	   as the field having ignored what was typed.
+
+	   `pre-line` rather than `pre-wrap`: it honours the newlines and still
+	   collapses runs of spaces, so a description pasted in with stray indentation
+	   or double spaces after a full stop sets the way the rest of the page does.
+	   The cards are deliberately left alone - see cards.css. */
+	white-space: pre-line;
+}
+
+/* The facts: balance, stock, limit. A short row of labelled figures. */
+.product-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	margin: 0;
+	padding: 14px 0;
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+}
+
+.product-meta dt {
+	font-size: var(--text-xs);
+	color: var(--ink-dim);
+}
+
+.product-meta dd {
+	margin: 2px 0 0;
+	font-size: var(--text-sm);
+	color: var(--ink);
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* The chosen address, written out line by line under the picker. Plain: the
+   same surface as a field, the name in bold. */
+.envelope {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-top: 4px;
+	padding: 12px 15px;
+	font-style: normal;
+	font-size: var(--text-sm);
+	line-height: 1.45;
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--control-radius);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.envelope span:first-child {
+	font-weight: 600;
+}
+
+/* The buy button spans the column, with the price in bold. */
+.product-actions .product-buy {
+	width: 100%;
+	min-width: 0;
+	padding: 15px 22px;
+	font-size: var(--text-base);
+}
+
+.product-buy strong {
+	font-weight: 800;
+}
+
+@media (max-width: 700px) {
+	.product {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.product-gallery {
+		position: static;
+	}
+}

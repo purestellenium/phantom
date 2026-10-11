@@ -1,0 +1,183 @@
+/* ==========================================================================
+   Controls the landing page never needed: the disabled states, the quiet
+   variant, and a link wearing the button.
+   ========================================================================== */
+
+.control-input:disabled {
+	color: var(--ink-dim);
+	cursor: not-allowed;
+	/* Flat. A disabled control is the one place a dead surface is the right
+     signal - there is nothing to invite. */
+	background-image: none;
+}
+
+/* Sunk rather than lit: the dark field's fill and edge, dim type, no weave.
+   The type has to stay readable - a disabled button still says what it would
+   do and what it would cost. Hover and focus are named too, so the button
+   does not flip inside out (or light its edge) as if pressing it would work. */
+.control-btn:disabled,
+.control-btn:disabled:hover,
+.control-btn:disabled:focus-visible {
+	color: var(--ink-dim);
+	background-color: var(--surface);
+	border-color: var(--line);
+	cursor: not-allowed;
+	background-image: none;
+}
+
+/* The quiet button: same geometry, one level down the ramp. For anything that
+   is not the primary action on the surface it sits on - a cancel, a sign out, a
+   secondary route. It is a step of the ramp rather than a colour, so it reads as
+   further back rather than as a different kind of thing. */
+.control-btn.is-quiet {
+	color: var(--ink);
+	background-color: #3a3a40;
+	border-color: var(--line);
+	background-image: var(--weave-bayer), var(--shade-inset);
+}
+
+.control-btn.is-quiet:hover,
+.control-btn.is-quiet:focus-visible {
+	color: var(--on-light);
+	background-color: var(--ink);
+	border-color: var(--ink);
+	background-image: var(--weave-bayer-hard), var(--shade-raised);
+}
+
+/* The dangerous button: red, the one hue the ramp keeps for things that are
+   wrong, for an action that cannot be taken back. Ordinary danger, not the
+   staff doors' theatre. */
+.control-btn.is-danger {
+	color: #fff1f2;
+	background-color: #c2414c;
+	border-color: #c2414c;
+	background-image: var(--weave-alarm), var(--shade-raised);
+}
+
+.control-btn.is-danger:hover,
+.control-btn.is-danger:focus-visible {
+	color: #fff1f2;
+	background-color: #8e2b34;
+	border-color: #c2414c;
+	background-image: var(--weave-alarm), var(--shade-inset);
+}
+
+/* A button spanning its column, for the one action a section is. */
+.control-btn.is-wide {
+	display: block;
+	width: 100%;
+	padding: 13px 22px;
+}
+
+/* A button carrying more visual weight than the default without going full
+   width - one standing beside a page title, for instance, where the default
+   size reads as an afterthought next to the heading it shares a row with. */
+.control-btn.is-large {
+	padding: 13px 22px;
+	font-size: var(--text-md);
+}
+
+/* A group of fields that goes dead together. No box of its own; the form's
+   own spacing runs through it. */
+.lock {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+/* Nothing to press while it is locked, and no gap where the button was. */
+.lock:disabled .form-actions {
+	display: none;
+}
+
+.lock:disabled .control-input,
+.lock:disabled .control-textarea,
+.lock:disabled .hk-summary {
+	cursor: not-allowed;
+}
+
+/* ── the barrier ─────────────────────────────────────────────────────────── */
+
+/* Tape across a panel whose form is locked: a veil over the whole thing and
+   one band through the middle with the words running along it, in the light
+   fill the primary button wears. */
+.barrier {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	/* A light veil: the form stays in its own colours, just behind glass. */
+	background-color: rgba(10, 10, 12, 0.18);
+	cursor: not-allowed;
+}
+
+/* Two of them, crossing. Both sit on the centre; each is turned its own way. */
+.barrier-tape {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	width: 180%;
+	height: 84px;
+	overflow: hidden;
+	/* The primary button's material: the light fill, dark ink, on the grey
+	   ramp like everything else. */
+	color: var(--on-light);
+	background-color: var(--ink);
+	/* The hazard stripes, faint, under the weave: dark bands at low opacity
+	   so the words stay legible over them. */
+	background-image:
+		var(--weave-bayer-hard),
+		repeating-linear-gradient(-45deg, transparent 0 26px, rgba(23, 22, 26, 0.14) 26px 52px),
+		var(--shade-raised);
+	border-top: 3px solid var(--bg);
+	border-bottom: 3px solid var(--bg);
+	box-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
+}
+
+.barrier-tape.is-first {
+	transform: rotate(-16deg);
+}
+
+.barrier-tape.is-second {
+	transform: rotate(15deg);
+}
+
+/* The words, repeated along the tape. Still: it read as a marquee. */
+.barrier-run {
+	display: flex;
+	flex: none;
+	gap: 36px;
+	padding-left: 36px;
+	font-family: var(--font-geist-pixel-square), ui-monospace, monospace;
+	font-size: 38px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+/* A link that is an action.
+   Both OAuth handoffs are GET routes on our own origin, so the thing that
+   starts one is an <a> and not a submit - it has to be middle-clickable, and a
+   button would mean a form whose only job is to turn a click into a
+   navigation. The two properties below are what .control-btn is missing on an
+   inline box: min-width and text-align are ignored by a non-replaced inline,
+   so without this the sign-in button laid out as a bare run of words with
+   padding leaking over the line above it. No new fill; it is the same button. */
+a.control-btn {
+	display: inline-grid;
+	place-items: center;
+	text-decoration: none;
+}
+
+.control-btn:focus,
+.control-input:focus {
+	outline: none;
+}

@@ -1,0 +1,145 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+/* The page scrolls: one screen of hero, then the footer band under it.
+   Horizontally it never does - nothing here is wider than the viewport, and a
+   sideways scroll would only ever be a bug's symptom.
+
+   No scrollbar. The browser paints it, so it would arrive as a crisp
+   undithered gutter down the side of a frame made entirely of dither - the
+   same reason the controls carry no outline. The wheel, the trackpad, the
+   keyboard and touch all still scroll; only the bar is gone. */
+html {
+	scrollbar-width: none;
+	/* The mark in the lede is an in-page link, and a jump cut across five bands
+     tells you nothing about where you went. Honoured only where motion is
+     wanted; the guard below hands it back. */
+	scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}
+
+/* Landing flush against the top edge puts a heading in the darkest band of the
+   aperture. This drops it clear of the rim. */
+.band {
+	scroll-margin-top: 6vh;
+}
+/* The FAQ is the one band arrived at on purpose - the "FAQ" mark in the lede
+   jumps here - so the jump anchors to the "questions?" HEADING itself
+   (#faq), not the section. The band's own 11vh top padding sits above the
+   heading, so landing on the section left a constant gap between where the jump
+   came down and the heading: it always landed that far above the questions,
+   however much the margin was nudged. Anchored to the heading it lands square on
+   it, with only the band's clear field above rather than the tail of the
+   section before it. */
+#faq {
+	scroll-margin-top: 10vh;
+}
+html::-webkit-scrollbar {
+	display: none;
+}
+
+html,
+body {
+	width: 100%;
+	min-height: 100%;
+	/* Clip, not hidden. Hidden on both of these makes body a scroll container
+	   that never scrolls, and position: sticky anywhere below it then sticks to
+	   that instead of the window: it scrolls away like everything else. */
+	overflow-x: clip;
+	background-color: var(--bg);
+	color: var(--fg);
+	/* Geist Sans, which is what the rest of the application is set in.
+	
+	   This is the inherited default rather than a face anything asks for by
+	   name: .shell, .inner-page, .band, .faq and .page-foot each declare their
+	   own, so what actually lands here is whatever they do not cover - in
+	   practice the Solo pages (sign-in, 404, the error page), which sit outside
+	   the shell and so inherited straight from here. Those used to render in
+	   Inter, which meant a 352KB variable file downloaded to set three pages
+	   that had no reason to look different from every other one. Pointing the
+	   default at the face already being fetched makes them match the platform
+	   and takes the second family off the wire entirely. */
+	font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* The field: a fixed canvas behind everything, drawn by $lib/field. */
+.field {
+	position: fixed;
+	inset: 0;
+	/* Dynamic units, not vh/vw.
+
+     On a phone 100vh is the LARGE viewport - the height the page would have if
+     the URL bar were retracted - while the canvas's backing store is sized from
+     window.innerHeight, which is the height it actually has right now. The two
+     disagree by the height of the browser chrome, so the field was drawn at one
+     size and then stretched to another: everything scaled up a little and the
+     right and bottom edges ran off the screen. dvh/dvw are the size it really
+     is, which is the same number JS is reading. */
+	width: 100dvw;
+	height: 100dvh;
+	display: block;
+	z-index: 0;
+	background-color: var(--bg);
+	/* The canvas is one cell per two pixels and is scaled up to the viewport:
+     this is what keeps the cells square instead of blurring them. */
+	image-rendering: pixelated;
+}
+
+/* ── loading ─────────────────────────────────────────────────────────────── */
+
+/* The instant cover. It is in the served HTML (#loader in app.html) and styled
+   here, in the render-blocking bundle, so it is painted on the very first frame
+   - no wait for hydration, which is the whole point of a loading screen. A plain
+   coal ground with the word on it, nothing moving. The one effect is the exit:
+   when the page is ready the canvas draws this same flat cover and dithers it
+   away into the page, removing this element in the same breath (Loader.svelte). */
+#loader {
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	display: grid;
+	place-items: center;
+	/* The ground itself, not a grey of its own. Kept as the literal --bg value
+	   rather than the token because Loader.svelte has to draw the identical fill
+	   into a canvas and cannot read a variable at that point - the two are a
+	   pair, and the note there says so too. */
+	background-color: #0a0a0c;
+}
+
+/* The system monospace, on purpose: it needs no download, so the word cannot
+   swap fonts and jump the way a webfont would while the page is still loading.
+   No letter-spacing either, so the canvas word that takes over for the dissolve
+   lines up with it exactly. */
+#loader-word {
+	font-family: ui-monospace, monospace;
+	font-weight: 800;
+	font-size: clamp(28px, 11vw, 104px);
+	color: #d7d7de;
+}
+
+/* Under load the page is hidden behind the cover, so nothing of it shows through
+   until the loader is done. Held from the first paint by `is-loading` on the
+   served <html>. */
+:root.is-loading #content {
+	opacity: 0;
+}
+
+/* The operator doors sit outside #content; hold them out too, and let them
+   fade in once the cover is on its way off. */
+.danger-zone {
+	transition: opacity 400ms ease 200ms;
+}
+
+:root.is-loading .danger-zone {
+	opacity: 0;
+	transition: none;
+}

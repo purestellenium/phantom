@@ -1,0 +1,104 @@
+/* ── the order page ──────────────────────────────────────────────────────── */
+
+/* The order on the left, its facts on the right; one column on a phone. */
+.order {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 300px;
+	gap: 24px;
+	align-items: start;
+}
+
+.order-main,
+.order-side {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.order-back {
+	align-self: flex-start;
+}
+
+/* The lines. A table, because it is one: a thing, a price, a count, a sum. */
+.order-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--text-sm);
+}
+
+.order-table th,
+.order-table td {
+	padding: 12px 16px;
+	text-align: right;
+	vertical-align: top;
+	white-space: nowrap;
+	border-bottom: 1px solid var(--panel-line);
+}
+
+.order-table th {
+	font-size: var(--text-xs);
+	font-weight: 500;
+	color: var(--ink-dim);
+}
+
+.order-table td {
+	font-family: var(--font-geist-mono), ui-monospace, monospace;
+	color: var(--ink);
+}
+
+.order-table .is-item {
+	width: 100%;
+	text-align: left;
+	white-space: normal;
+	font-family: inherit;
+}
+
+.order-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.order-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Cancel spans the column. */
+.order-cancel {
+	flex: 1 1 100%;
+}
+
+/* The facts: a label over a value, each on its own rule. */
+.order-facts {
+	margin: 0;
+	gap: 0;
+	padding: 0 16px;
+}
+
+.order-facts > div {
+	padding: 12px 0;
+	border-bottom: 1px solid var(--panel-line);
+}
+
+.order-facts > div:last-child {
+	border-bottom: 0;
+}
+
+.order-facts dt {
+	font-size: var(--text-xs);
+	font-weight: 500;
+	color: var(--ink-dim);
+}
+
+.order-facts dd {
+	margin: 4px 0 0;
+	font-size: var(--text-sm);
+	color: var(--ink);
+	overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+	.order {
+		grid-template-columns: 1fr;
+	}
+}

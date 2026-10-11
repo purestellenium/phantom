@@ -1,0 +1,122 @@
+:root {
+	/* The page is dark, and the browser needs telling - not for anything CSS
+     paints, but for everything it does not. The caret, the autofill highlight
+     Chrome puts behind a filled field and every other user-agent surface are
+     picked from this, and a page this dark that has not declared itself gets
+     the light ones: a 1Password fill landed as a pale blue slab in the middle
+     of the field. */
+	color-scheme: dark;
+
+	--bg: #0a0a0c;
+	--fg: #e9e6e1;
+
+	/* Control tokens, taken from the Paper file and moved onto our palette.
+     Its #393833 border was already all but identical to ours, so the borders
+     carry over unchanged; the surface and inks are pulled darker to sit on
+     #0a0a0c rather than #181715. */
+	/* Raised from #17161A once the controls moved into the dithered field. At
+     that value the field sat about four percent above the ground, which is
+     less than one step of a seven-level ramp - so it quantised to the same
+     levels as the background and disappeared. This clears a step. */
+	--surface: #2c2c31;
+	--line: #4a4a52; /* the field needs an edge now the fill is doing less */
+	--ink: #e9e6e1; /* was #D6D3D1 */
+	/* Raised from #79716B along with the surface. Seven levels is a coarse
+     ramp: at the old value the placeholder and the field it sits on landed
+     barely two steps apart, and 14px type has too little ink per glyph to
+     survive that. This puts three clear steps between them. */
+	--ink-dim: #a49c94;
+	/* Between --ink and --ink-dim: a secondary label that must stay clearly
+	   readable but sit a step under the figure it captions, without dropping to
+	   the muted --ink-dim. */
+	--ink-mid: #beb9b2;
+	--on-light: #17161a; /* text on the light button */
+	--control-radius: 10px;
+
+	/* The ladder, and the reason it is a ladder.
+
+     Pass C quantises to seven levels, so two fills that land on the same level
+     are the same fill however different they look in a colour picker - a hover
+     that quantises back into the surface under it is not a state, it is a box
+     that stops responding. These are spaced to clear a level each: the ground
+     at zero, --surface at one, --panel at two, --lift at three, --raise at
+     four. Anything that needs to stand off something else takes the next rung
+     rather than a new hue.
+
+     They lived on .faq-panel while the FAQ was the only thing that needed more
+     than one step. The bands under the hero all need them now. */
+	--panel: #45454c;
+	--panel-lift: #6a6a72;
+	--panel-raise: #8c8c94;
+	/* --line is nearly --panel's own fill, so boxes sitting on --panel and above
+     get an edge that still reads. */
+	--panel-line: #86868e;
+
+	/* The same ladder, read as depth, for the surfaces the landing page does not
+     have. The ground is the field itself; a control sits on it; a panel is a
+     lit reading surface; and the last two are the states a row takes inside a
+     panel. Anything nested deeper than this allows is nested too deep to
+     survive seven levels, and wants restructuring rather than a sixth colour.
+     Aliases of the values above, so there is one ladder and not two. */
+	--level-ground: #0a0a0c;
+	--level-surface: var(--surface);
+	--level-panel: var(--panel);
+	--level-lift: var(--panel-lift);
+	--level-raise: var(--panel-raise);
+
+	/* One type scale, in fixed steps. The body text was on vw-based clamps,
+     which drift against each other at every width and never settle into a
+     ratio. Only the display size still scales with the viewport. */
+	/* Everything is a step up from the Paper file's sizes. Seven levels at a 2px
+     cell is a coarse renderer - it needs more ink per glyph than a browser
+     does, and the controls at 14px were the first thing to fall over. */
+	--text-xs: 13px;
+	--text-sm: 17px;
+	--text-base: 17px;
+	--text-md: 19px;
+	--text-lg: 21px;
+
+	/* The weaves the surfaces are printed with. They were drawn by the
+     rasteriser from a table of blocks; these are the same blocks as tiles the
+     browser repeats. Alpha, not colour, so one tile serves a dark field and a
+     light button alike. Feature size stays at 2px and 4px blocks so a tile
+     reads as a material rather than as a texture. */
+
+	--weave-bayer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23000' fill-opacity='0.090'/%3E%3Crect x='4' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.006'/%3E%3Crect x='8' y='0' width='4' height='4' fill='%23000' fill-opacity='0.066'/%3E%3Crect x='12' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.030'/%3E%3Crect x='0' y='4' width='4' height='4' fill='%23fff' fill-opacity='0.054'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23000' fill-opacity='0.042'/%3E%3Crect x='8' y='4' width='4' height='4' fill='%23fff' fill-opacity='0.078'/%3E%3Crect x='12' y='4' width='4' height='4' fill='%23000' fill-opacity='0.018'/%3E%3Crect x='0' y='8' width='4' height='4' fill='%23000' fill-opacity='0.054'/%3E%3Crect x='4' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.042'/%3E%3Crect x='8' y='8' width='4' height='4' fill='%23000' fill-opacity='0.078'/%3E%3Crect x='12' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.018'/%3E%3Crect x='0' y='12' width='4' height='4' fill='%23fff' fill-opacity='0.090'/%3E%3Crect x='4' y='12' width='4' height='4' fill='%23000' fill-opacity='0.006'/%3E%3Crect x='8' y='12' width='4' height='4' fill='%23fff' fill-opacity='0.066'/%3E%3Crect x='12' y='12' width='4' height='4' fill='%23000' fill-opacity='0.030'/%3E%3C/svg%3E");
+	--weave-bayer-hard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23000' fill-opacity='0.200'/%3E%3Crect x='4' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.013'/%3E%3Crect x='8' y='0' width='4' height='4' fill='%23000' fill-opacity='0.147'/%3E%3Crect x='12' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.067'/%3E%3Crect x='0' y='4' width='4' height='4' fill='%23fff' fill-opacity='0.120'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23000' fill-opacity='0.093'/%3E%3Crect x='8' y='4' width='4' height='4' fill='%23fff' fill-opacity='0.173'/%3E%3Crect x='12' y='4' width='4' height='4' fill='%23000' fill-opacity='0.040'/%3E%3Crect x='0' y='8' width='4' height='4' fill='%23000' fill-opacity='0.120'/%3E%3Crect x='4' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.093'/%3E%3Crect x='8' y='8' width='4' height='4' fill='%23000' fill-opacity='0.173'/%3E%3Crect x='12' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.040'/%3E%3Crect x='0' y='12' width='4' height='4' fill='%23fff' fill-opacity='0.200'/%3E%3Crect x='4' y='12' width='4' height='4' fill='%23000' fill-opacity='0.013'/%3E%3Crect x='8' y='12' width='4' height='4' fill='%23fff' fill-opacity='0.147'/%3E%3Crect x='12' y='12' width='4' height='4' fill='%23000' fill-opacity='0.067'/%3E%3C/svg%3E");
+	/* The grid's lines are the white highlight; the cell it encloses is the black.
+     Both line rects were roughly halved (0.070 → 0.036 across the top, 0.050 →
+     0.026 down the side) because the gap between them and the cell was reading
+     through the copy printed over it - a ruled sheet showing through the words
+     rather than a material behind them. The cell is untouched, so the surface
+     sits at the same overall level on the ramp and only the ruling recedes.
+     The two lines keep their old ratio to each other: the top being brighter
+     than the side is what makes the tile read as lit from above rather than as
+     a flat mesh, and matching them would trade one legibility problem for a
+     texture that no longer looks embossed. */
+	--weave-grid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='2' fill='%23fff' fill-opacity='0.036'/%3E%3Crect x='0' y='0' width='2' height='8' fill='%23fff' fill-opacity='0.026'/%3E%3Crect x='2' y='2' width='6' height='6' fill='%23000' fill-opacity='0.035'/%3E%3C/svg%3E");
+	/* The same grid, for surfaces big enough that you see a lot of it.
+	 *
+	 * Not a correction for the lighter base a panel sits on - that is already
+	 * even. Composited over #2c2c31 a card's line-to-cell step is ΔL* 4.2, and
+	 * over a panel's #45454c it is 4.0, because a white overlay contributes
+	 * a(255 − base) and a black one −a(base): as the base lightens the line gives
+	 * up exactly what the cell gains. The two read the same LOCALLY.
+	 *
+	 * What differs is how much of it there is. A card is a small tile of this
+	 * material; a panel is most of a page of it, and a texture you see more of
+	 * reads as busier at identical local contrast. So the alphas come down by
+	 * about a third (ΔL* ≈ 2.8), which is the amount that stops a full-page grid
+	 * competing with the text on it while still leaving a material there.
+	 *
+	 * Small things keep --weave-grid. A focused input is the same fill and the
+	 * same weave a panel takes, and panel.css says so deliberately - but that
+	 * relationship is about the MATERIAL, not the tile, and an input is never big
+	 * enough to have this problem. */
+	--weave-grid-wide: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='2' fill='%23fff' fill-opacity='0.025'/%3E%3Crect x='0' y='0' width='2' height='8' fill='%23fff' fill-opacity='0.018'/%3E%3Crect x='2' y='2' width='6' height='6' fill='%23000' fill-opacity='0.025'/%3E%3C/svg%3E");
+	--weave-alarm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.014'/%3E%3Crect x='4' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.081'/%3E%3Crect x='8' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.031'/%3E%3Crect x='12' y='0' width='4' height='4' fill='%23fff' fill-opacity='0.098'/%3E%3Crect x='0' y='4' width='4' height='4' fill='%23000' fill-opacity='0.039'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23000' fill-opacity='0.106'/%3E%3Crect x='8' y='4' width='4' height='4' fill='%23000' fill-opacity='0.022'/%3E%3Crect x='12' y='4' width='4' height='4' fill='%23000' fill-opacity='0.090'/%3E%3Crect x='0' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.039'/%3E%3Crect x='4' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.106'/%3E%3Crect x='8' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.022'/%3E%3Crect x='12' y='8' width='4' height='4' fill='%23fff' fill-opacity='0.090'/%3E%3Crect x='0' y='12' width='4' height='4' fill='%23000' fill-opacity='0.014'/%3E%3Crect x='4' y='12' width='4' height='4' fill='%23000' fill-opacity='0.081'/%3E%3Crect x='8' y='12' width='4' height='4' fill='%23000' fill-opacity='0.031'/%3E%3Crect x='12' y='12' width='4' height='4' fill='%23000' fill-opacity='0.098'/%3E%3C/svg%3E");
+	/* A vertical ramp across a box: "inset" shades the top so a field sits down
+     into the page, "raised" lights it so a button stands off it. */
+	--shade-inset: linear-gradient(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.033));
+	--shade-raised: linear-gradient(rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.033));
+}

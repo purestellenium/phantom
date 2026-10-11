@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ADD COLUMN "changelog_draft" text;

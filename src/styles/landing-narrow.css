@@ -1,0 +1,112 @@
+@media (max-width: 700px) {
+	/* The column is the whole screen here, not half of it, so the title has to be
+     cut from a different number.
+
+     8vw is the size that fills a 32vw column - PHANTOM sets 3.64em wide, and
+     the desktop rule sizes it to land just inside that with slack to spare. The
+     mobile column is 78vw, and the same 8vw left the title bottoming out on its
+     44px floor at about a third of the width available: a small word with two
+     thirds of the line empty, and the flag above it sized against a title that
+     never grew. 19.5vw fills this column the way 8vw fills that one.
+
+     11vw of inset rather than 8, to match the bands: the aperture is darkest
+     down both edges of a portrait frame, and at 8vw the P of the title and the
+     first letter of every line under it started inside it. */
+	/* The field gives way to the button instead of pushing it onto its own line.
+
+     It is flex: 0 1 260px everywhere else, and 260 plus a 92px button plus the
+     gap needs 362px of column - more than a phone has once the inset is taken
+     off, so the button wrapped underneath and left a very wide, very empty box
+     sitting above it. Growing from a small basis instead lets the field take
+     whatever is left over after the button, which is the row the two were
+     designed as. */
+	.control-input {
+		flex: 1 1 120px;
+	}
+
+	/* The hero is a stack here, not two layers.
+
+     The column was a fixed half of the screen and the bell a fixed sixty
+     percent anchored to the bottom, laid over it. On anything shorter than a
+     tall phone the column ran past its half - the field and the button ended
+     up on the bell's yoke - and because the bell's slot sat above them in the
+     stacking order and took pointer events, it caught the taps. The sign-up
+     row could not be tapped at all on a phone.
+
+     Stacked, the column takes the height its content needs and the bell takes
+     whatever is left. The screen is still one screen tall. */
+	.hero {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.inner-page {
+		--title-size: clamp(44px, 19.5vw, 150px);
+		/* The column tightens here. Only the token moves: the lede and the
+		   actions below measure their own gaps against it, so both stay at the
+		   same visible distance they hold on a wide screen rather than
+		   inheriting a second pair of hard-coded margins tuned to 22px. */
+		--col-gap: 12px;
+		width: 100%;
+		height: auto;
+		flex: none;
+		justify-content: flex-start;
+		/* The top pad is the hero's headspace, and the floor is what you get on a
+       short phone: 20svh - 120px bottoms out at zero around 600px tall, so
+       without a real floor the title sits flush against the top edge with the
+       bar retracted. 56px keeps a clear gap above the flag on every phone, and
+       the pad opens toward 96px as the screen gets tall enough to spare it. The
+       column is flex: none and the bell below is flex: 1, so this space comes
+       out of the bell, never off the bottom of the screen. */
+		padding: clamp(56px, calc(24svh - 120px), 96px) 11vw 0;
+	}
+
+	.page-foot {
+		min-height: 15vh;
+		gap: 32px;
+		/* A hem under the wordmark, which a wide screen does not need: the aperture
+       closes in from all four sides and a portrait frame is nearly all rim, so
+       a word sitting flat on the bottom edge is a word in the darkest band of
+       the field. */
+		padding: 9vh 0 5vh;
+	}
+
+	.foot-cols {
+		padding: 0 8vw;
+	}
+
+	.foot-cols {
+		gap: 32px;
+	}
+
+	.page-credit {
+		font-size: var(--text-xs);
+	}
+
+	/* The aperture falls off hardest into the bottom of a portrait frame, and the
+     wordmark sits in exactly that band - so the ramp stops higher up the scale
+     here than it does on a wide screen, where the lit middle of the field is
+     behind the same ink. */
+	.foot-mark {
+		margin-top: 4vh;
+		font-size: 23vw;
+		background-image: linear-gradient(#e6e2da, #8c8c94);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.model-wrap {
+		position: relative;
+		width: 100%;
+		height: auto;
+		flex: 1 1 0;
+		min-height: 0;
+		margin-top: 12px;
+		/* Only the keyboard easter egg listens for a click here, and a phone has
+       no keyboard to type it on. Letting taps pass through means nothing
+       under or near the bell can be shadowed by it. */
+		pointer-events: none;
+		cursor: default;
+	}
+}

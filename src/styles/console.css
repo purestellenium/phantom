@@ -1,0 +1,53 @@
+/* ── console ─────────────────────────────────────────────────────────────── */
+
+/* The operator surfaces are denser than the participant ones - a ledger, an
+   audit log, a queue of orders - but they take no new materials. Everything
+   below is a geometry change on a component that already exists, because a
+   sixth fill would collapse into one of the five the moment the field's
+   quantiser got hold of it. */
+
+/* An action sitting inside a row rather than at the foot of a panel. Same
+   button, sized to not dominate the record it acts on. */
+.control-btn.is-small {
+	min-width: 0;
+	padding: 6px 11px;
+	font-size: var(--text-xs);
+}
+
+/* Several of them side by side, in a row's right-hand track. */
+.row-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+/* A record with no value on the right - a log line, a finding. The auto track
+   would otherwise collapse to nothing and leave the label in a column narrower
+   than the panel. */
+.row.is-full {
+	grid-template-columns: 1fr;
+}
+
+/* Two or three short fields on one line, collapsing to one column when there is
+   no room. A price and a stock count do not each need the full width, and a
+   form that makes them take it reads as longer than it is. */
+.form-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	gap: 16px;
+	align-items: start;
+}
+
+/* The same material as the field, at block scale. Used for a description and
+   for the option schema, which is JSON an operator edits by hand. */
+.control-textarea {
+	width: 100%;
+	min-height: 120px;
+	padding: 9px 15px;
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 1.4286;
+	resize: vertical;
+}

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+# Postgres is the one backing service here, and a suspended orb wakes with it
+# stopped. Starting it is safe to repeat; brew treats an already-running service
+# as success.
+if command -v brew >/dev/null 2>&1 && brew list postgresql@16 >/dev/null 2>&1; then
+  brew services start postgresql@16 >/dev/null 2>&1 || true
+  echo "Postgres started."
+fi
+
+echo "Phantom orb is ready."
