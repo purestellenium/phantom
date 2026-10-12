@@ -1,6 +1,7 @@
 import { and, eq, inArray, ne } from 'drizzle-orm';
 
-import { PROVIDER_TIMEOUT_MS, readJsonObject } from '$lib/server/auth/oauth';
+import { applyAiDeduction } from '$lib/server/auth/ai-deduction';
+import { PROVIDER_TIMEOUT_MS, readJson, readJsonObject } from '$lib/server/auth/oauth';
 import { bindings, decryptToken, encryptToken } from '$lib/server/crypto';
 import { db } from '$lib/server/db/client';
 import { isUniqueViolation, violatedConstraint } from '$lib/server/db/errors';
@@ -11,13 +12,13 @@ import { staging, STAGING_HACKATIME_PROJECTS, stagingHackatimeLink } from '$lib/
 import {
 	isJsonArray,
 	isJsonObject,
-	parseJson,
 	readArray,
 	readId,
 	readNumber,
 	readObject,
 	readString,
-	type JsonObject
+	type JsonObject,
+	type JsonValue
 } from '$lib/json';
 
 /**
@@ -513,6 +514,58 @@ export async function unlinkHackatime(userId: string): Promise<boolean> {
 const PROJECTS_PATH = '/api/v1/authenticated/projects';
 
 /**
+ * The stats endpoint speaks a different auth scheme from everything else in
+ * this file: it keys off the user's Hackatime API key rather than the OAuth
+ * bearer, so the adjusted path exchanges the access token for a key first and
+ * then reads stats twice (raw total plus the "ai coding" split, in parallel).
+ * That is one sequential hop plus two parallel ones per dashboard load, against
+ * one call for the raw path - the cost of showing the adjusted tile.
+ */
+const API_KEYS_PATH = '/api/v1/authenticated/api_keys';
+const USER_STATS_PATH = '/api/v1/users/my/stats';
+const AI_CODING_CATEGORY = 'ai coding';
+
+/**
+ * One authenticated GET against Hackatime with the shared timeout and
+ * no-store policy.
+ *
+ * Returns the response and lets the caller decide what a status means: a 401
+ * (or 403 on stats) is a relink surfaced as null, anything else non-OK throws,
+ * which is why the status checks stay at the call sites instead of in here.
+ */
+async function hackatimeFetch(url: string | URL, token: string, label: string): Promise<Response> {
+	try {
+		return await fetch(url, {
+			headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
+			signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+			cache: 'no-store'
+		});
+	} catch (cause) {
+		throw new HackatimeError(label, { cause });
+	}
+}
+
+/**
+ * The project rows out of any envelope this family of Rails APIs uses: the
+ * list at the top level or wrapped in `data`/`projects`. One place so the
+ * list and the windowed queries cannot drift apart.
+ */
+function readProjectRows(body: JsonValue): readonly JsonValue[] {
+	if (isJsonArray(body)) return body;
+	if (isJsonObject(body)) return (readArray(body, 'data') ?? readArray(body, 'projects') ?? []);
+	return [];
+}
+
+/** Total seconds over the wanted names from an already-fetched project list. */
+function sumWanted(projects: readonly HackatimeProjectSummary[], wanted: Set<string>): number {
+	let total = 0;
+	for (const project of projects) {
+		if (wanted.has(project.name)) total += project.totalSeconds;
+	}
+	return total;
+}
+
+/**
  * The first moment Hackatime time counts toward Phantom, midnight UTC on
  * August 6, 2026. Anything logged before it is not Phantom work, however long
  * the project has existed. (It was January 1 until 2026-10-01; claims frozen
@@ -543,7 +596,7 @@ export type HackatimeChoices =
  * HACKATIME_COUNTS_FROM.
  *
  * Returns null when we cannot ask - no linked account, or the token was refused
- * (relink) - for the same reason `fetchHackatimeProjectSeconds` does: null is not
+ * (relink) - for the same reason `fetchHackatimeSeconds` does: null is not
  * zero, and a caller needs to tell "could not ask" from "asked, and there is
  * nothing there". Shared by that function and by the project form's dropdown, so
  * there is exactly one place that talks to `PROJECTS_PATH` and parses its shape.
@@ -564,16 +617,11 @@ export async function listHackatimeProjects(
 	const url = new URL(`${config.host}${PROJECTS_PATH}`);
 	url.searchParams.set('start_date', HACKATIME_COUNTS_FROM);
 
-	let response: Response;
-	try {
-		response = await fetch(url, {
-			headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
-			signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-			cache: 'no-store'
-		});
-	} catch (cause) {
-		throw new HackatimeError('Could not reach Hackatime to read projects.', { cause });
-	}
+	const response = await hackatimeFetch(
+		url,
+		accessToken,
+		'Could not reach Hackatime to read projects.'
+	);
 
 	/* A refused token is a relink, not a failure to retry - same reading as the
 	   profile endpoint. Surfaced as null so the caller says "reconnect Hackatime". */
@@ -584,16 +632,7 @@ export async function listHackatimeProjects(
 		});
 	}
 
-	const body = parseJson(await response.text());
-	if (body === undefined) {
-		throw new HackatimeError('Hackatime returned a projects body that is not JSON.');
-	}
-
-	const list = isJsonArray(body)
-		? body
-		: isJsonObject(body)
-			? (readArray(body, 'data') ?? readArray(body, 'projects') ?? [])
-			: [];
+	const list = readProjectRows(await readJson(response, 'Hackatime projects'));
 
 	const out: HackatimeProjectSummary[] = [];
 	for (const entry of list) {
@@ -688,16 +727,11 @@ async function projectSecondsBetween(
 	url.searchParams.set('end_date', endIso);
 	if (projectNames) url.searchParams.set('projects', projectNames.join(','));
 
-	let response: Response;
-	try {
-		response = await fetch(url, {
-			headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
-			signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-			cache: 'no-store'
-		});
-	} catch (cause) {
-		throw new HackatimeError('Could not reach Hackatime to read a day of activity.', { cause });
-	}
+	const response = await hackatimeFetch(
+		url,
+		accessToken,
+		'Could not reach Hackatime to read a day of activity.'
+	);
 
 	if (response.status === 401) return null;
 	if (!response.ok) {
@@ -706,16 +740,7 @@ async function projectSecondsBetween(
 		});
 	}
 
-	const body = parseJson(await response.text());
-	if (body === undefined) {
-		throw new HackatimeError('Hackatime returned a projects body that is not JSON.');
-	}
-
-	const list = isJsonArray(body)
-		? body
-		: isJsonObject(body)
-			? (readArray(body, 'data') ?? readArray(body, 'projects') ?? [])
-			: [];
+	const list = readProjectRows(await readJson(response, 'Hackatime projects'));
 
 	/* Filtered here as well as by Hackatime, so a server that ignored the
 	   `projects` parameter could not count an unlinked project as activity. */
@@ -725,7 +750,10 @@ async function projectSecondsBetween(
 		if (!isJsonObject(entry)) continue;
 		const name = readString(entry, 'name');
 		if (name === null || (wanted && !wanted.has(name))) continue;
-		const seconds = Math.max(0, Math.round(readNumber(entry, 'total_seconds') ?? 0));
+		const seconds = Math.max(
+			0,
+			Math.round(readNumber(entry, 'total_seconds') ?? readNumber(entry, 'totalSeconds') ?? 0)
+		);
 		perProject.set(name, (perProject.get(name) ?? 0) + seconds);
 	}
 	return perProject;
@@ -743,25 +771,132 @@ function stagingHackatimeDay(userId: string, day: string): HackatimeDay {
 /**
  * Total Hackatime seconds across the named projects for a user.
  *
+ * The one entry point for "how much time in these projects": ships, recounts
+ * and the dashboard all come through here, and the AI adjustment is a flag at
+ * the call site rather than a second implementation. `adjustForAi` true shows
+ * the raw total minus two thirds of the "ai coding" split; false (the default)
+ * freezes and grants the raw claim, which is what ships and reviews record.
+ *
  * Returns null when we cannot ask - no linked account, or the token was refused
  * (relink). Null is deliberately not zero: the ship path must tell "we could not
  * count" apart from "linked, and the total really is zero", the same distinction
  * eligibility keeps between `unavailable` and a real answer. A transport or 5xx
  * failure throws, so the caller can fail the ship closed rather than guess.
  */
-export async function fetchHackatimeProjectSeconds(
+export async function fetchHackatimeSeconds(
 	userId: string,
-	projectNames: string[]
+	projectNames: string[],
+	options?: { adjustForAi?: boolean }
 ): Promise<number | null> {
 	if (projectNames.length === 0) return 0;
+	if (options?.adjustForAi) return fetchAdjustedHackatimeSeconds(userId, projectNames);
 
 	const list = await listHackatimeProjects(userId);
 	if (list === null) return null;
+	return sumWanted(list, new Set(projectNames));
+}
 
-	const wanted = new Set(projectNames);
-	let total = 0;
-	for (const project of list) {
-		if (wanted.has(project.name)) total += project.totalSeconds;
+async function fetchHackatimeUserApiKey(accessToken: string): Promise<string | null> {
+	const config = requireProvider('hackatime');
+
+	const response = await hackatimeFetch(
+		`${config.host}${API_KEYS_PATH}`,
+		accessToken,
+		'Could not reach Hackatime to read API keys.'
+	);
+
+	if (response.status === 401) return null;
+	if (!response.ok) {
+		throw new HackatimeError(`Hackatime's api_keys endpoint returned ${response.status}.`, {
+			status: response.status
+		});
+	}
+
+	/* A 200 without a token is a malformed response, not a refused credential:
+	   null would tell the caller "reconnect" when there is nothing wrong with
+	   the link. */
+	const payload = await readJsonObject(response, 'Hackatime api_keys');
+	const token = readString(payload, 'token');
+	if (token === null) {
+		throw new HackatimeError('Hackatime returned an api_keys body with no token.');
+	}
+	return token;
+}
+
+async function fetchStatsTotalSeconds(input: {
+	apiKey: string;
+	projectNames: string[];
+	aiOnly: boolean;
+}): Promise<number | null> {
+	const config = requireProvider('hackatime');
+
+	const url = new URL(`${config.host}${USER_STATS_PATH}`);
+	url.searchParams.set('start_date', HACKATIME_COUNTS_FROM);
+	url.searchParams.set('filter_by_project', input.projectNames.join(','));
+	url.searchParams.set('total_seconds', 'true');
+	if (input.aiOnly) url.searchParams.set('filter_by_category', AI_CODING_CATEGORY);
+
+	const response = await hackatimeFetch(
+		url,
+		input.apiKey,
+		'Could not reach Hackatime to read stats.'
+	);
+
+	if (response.status === 401 || response.status === 403) return null;
+	if (!response.ok) {
+		throw new HackatimeError(`Hackatime's stats endpoint returned ${response.status}.`, {
+			status: response.status
+		});
+	}
+
+	/* Same contract as the api_keys call above: a 200 without a total is
+	   malformed and throws, so null keeps meaning "could not ask". The
+	   camelCase spelling matches the tolerance the projects parsers have. */
+	const body = await readJsonObject(response, 'Hackatime stats');
+	const total = readNumber(body, 'total_seconds') ?? readNumber(body, 'totalSeconds');
+	if (total === null) {
+		throw new HackatimeError('Hackatime returned a stats body with no total.');
 	}
 	return total;
+}
+
+async function fetchAdjustedHackatimeSeconds(
+	userId: string,
+	projectNames: string[]
+): Promise<number | null> {
+	if (staging) return stagingAdjustedHackatimeSeconds(projectNames);
+
+	const accessToken = await getHackatimeAccessToken(userId);
+	if (!accessToken) return null;
+
+	const apiKey = await fetchHackatimeUserApiKey(accessToken);
+	if (!apiKey) return null;
+
+	const [total, ai] = await Promise.all([
+		fetchStatsTotalSeconds({ apiKey, projectNames, aiOnly: false }),
+		fetchStatsTotalSeconds({ apiKey, projectNames, aiOnly: true })
+	]);
+	if (total === null || ai === null) return null;
+
+	/* The two legs are read in parallel rather than atomically, so they can
+	   disagree - the AI split arriving a heartbeat later than the total it was
+	   split from. Clamped here, where the race can be named, so the pure
+	   deduction below only ever sees 0 <= ai <= total. */
+	const safeTotal = Math.max(0, total);
+	const safeAi = Math.min(Math.max(0, ai), safeTotal);
+	return applyAiDeduction(safeTotal, safeAi);
+}
+
+/**
+ * Staging pretends a quarter of the fake total is AI-coded, so the dashboard
+ * exercises the adjusted path the way production does. The fraction is a guess
+ * about demo data, not a policy: the real split comes from Hackatime, and the
+ * policy that prices it lives in `ai-deduction.ts`.
+ */
+const STAGING_AI_FRACTION = 1 / 4;
+
+function stagingAdjustedHackatimeSeconds(projectNames: string[]): number {
+	const total = sumWanted(STAGING_HACKATIME_PROJECTS, new Set(projectNames));
+	const safeTotal = Math.max(0, total);
+	return applyAiDeduction(safeTotal, safeTotal * STAGING_AI_FRACTION);
 }

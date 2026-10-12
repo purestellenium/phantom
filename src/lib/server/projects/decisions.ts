@@ -10,7 +10,7 @@ import {
 	isHyperChroma
 } from '$lib/server/ari';
 import { recordAudit, type DbHandle } from '$lib/server/audit';
-import { fetchHackatimeProjectSeconds, HackatimeError } from '$lib/server/auth/hackatime';
+import { fetchHackatimeSeconds, HackatimeError } from '$lib/server/auth/hackatime';
 import { db } from '$lib/server/db/client';
 import {
 	ariDeliveries,
@@ -1136,7 +1136,7 @@ export async function recountClaim(payload: JsonObject | null): Promise<EffectOu
 
 	let claimed: number | null;
 	try {
-		claimed = await fetchHackatimeProjectSeconds(
+		claimed = await fetchHackatimeSeconds(
 			row.userId,
 			parseProjectNames(row.hackatimeProjects)
 		);
