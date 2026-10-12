@@ -87,4 +87,4 @@ ai was heavily used in the creation of this project! it was a group effort, with
 ## contributing
 
 this repository is a clone of the real working repo (in order to keep the real one secret / avoid leaks for the story & lore), so it may not always be up to date.
-however, pull requests are still welcome! ask in #phantom-help or dm me on slack if you have questions!
+however, pull requests are still welcome! ask in #phantom-help, or dm @stelle or @nty on slack if you have questions!
