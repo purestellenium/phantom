@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 import { eligibilityAllows } from '$lib/server/auth/eligibility';
-import { fetchHackatimeProjectSeconds, getLinkedHackatime } from '$lib/server/auth/hackatime';
+import { fetchHackatimeSeconds, getLinkedHackatime } from '$lib/server/auth/hackatime';
 import { recordEvent } from '$lib/server/analytics';
 import { recheckEligibility } from '$lib/server/auth/eligibility-refresh';
 import { hcaVerifyUrl } from '$lib/server/auth/hca';
@@ -226,12 +226,18 @@ export const load: PageServerLoad = async ({ url }) => {
 		 * what the name says: tracked time on the Hackatime projects their
 		 * projects have claimed, whatever state those projects are in.
 		 *
+		 * AI-coded time counts at a third here: the stats endpoint splits the
+		 * "ai coding" category out of the raw total, and the tile shows the raw
+		 * total minus two thirds of that split. Ships and reviews still freeze
+		 * and grant the raw claim, so this tile deliberately reads lower than a
+		 * submission's frozen claim wherever AI did some of the typing.
+		 *
 		 * It is therefore no longer a monotonic figure the ledger can vouch for.
 		 * It is Hackatime's number, it moves while they work, and it owes nothing
 		 * to what has been approved - `balance` below is still the only thing the
 		 * goal is measured in, and the only thing anything is bought with.
 		 *
-		 * STREAMED, for the same reason the address is: it costs a call to
+		 * STREAMED, for the same reason the address is: it costs calls to
 		 * another company, and nothing else on the page waits for it. Null is
 		 * "we could not count" - unlinked, token refused, Hackatime unreachable -
 		 * and is drawn as such rather than as a zero, which would be a claim.
@@ -239,7 +245,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		 * account spends no request on it.
 		 */
 		logged: {
-			seconds: fetchHackatimeProjectSeconds(user.id, claimedNames).catch(() => null)
+			seconds: fetchHackatimeSeconds(user.id, claimedNames, { adjustForAi: true }).catch(() => null)
 		},
 		balance,
 		goalSeconds,

@@ -6,7 +6,7 @@ import { ARI_INGEST_EFFECT, ariIngestDedupeKey, latestAriShip } from '$lib/serve
 import { recordAudit } from '$lib/server/audit';
 import { eligibilityAllows } from '$lib/server/auth/eligibility';
 import { currentEligibility } from '$lib/server/auth/eligibility-refresh';
-import { fetchHackatimeProjectSeconds } from '$lib/server/auth/hackatime';
+import { fetchHackatimeSeconds } from '$lib/server/auth/hackatime';
 import { fetchHcaAddresses, type HcaAddress } from '$lib/server/auth/hca';
 import { currentOrigin } from '$lib/server/auth/origin';
 import type { SessionUser } from '$lib/server/auth/session';
@@ -432,7 +432,7 @@ export async function shipProject(input: ShipInput): Promise<ShipResult> {
 	let claimed: number | null;
 	let sinceLastShip: number | null = null;
 	try {
-		claimed = await fetchHackatimeProjectSeconds(user.id, names);
+		claimed = await fetchHackatimeSeconds(user.id, names);
 		if (claimed !== null && priorApproval) {
 			sinceLastShip = await newTimeSince(user.id, names, priorApproval.createdAt);
 			if (sinceLastShip === null) claimed = null;
@@ -700,7 +700,7 @@ export async function resumeAfterChanges(input: {
 	}
 	let claimed: number | null;
 	try {
-		claimed = await fetchHackatimeProjectSeconds(user.id, names);
+		claimed = await fetchHackatimeSeconds(user.id, names);
 	} catch {
 		return {
 			ok: false,
